@@ -1,14 +1,19 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="ChangeListManager">
-    <list default="true" id="3d3888e4-2b99-4577-b0e8-ad48e3042e22" name="Default Changelist" comment="Added histogram to MACD chart. Filtered weekend data out of charts. Changed prices to candlestick chart.">
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/main.py" beforeDir="false" afterPath="$PROJECT_DIR$/prev_main_version.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/output.txt" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/s&amp;p_500.csv" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/sp500_dictionary.pkl" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/test_code/unit_testing.py" beforeDir="false" afterPath="$PROJECT_DIR$/test_code/unit_testing.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/web_scraping/stock_ticker_webscrapper.py" beforeDir="false" afterPath="$PROJECT_DIR$/web_scraping/stock_ticker_webscrapper.py" afterDir="false" />
+    <list default="true" id="3d3888e4-2b99-4577-b0e8-ad48e3042e22" name="Default Changelist" comment="Created MySQL database to store stock data. Split code up into multiple modules: SQL_DB class to read/write to SQL db, Stock class, and Plot class for plotting each stock.">
+      <change afterPath="$PROJECT_DIR$/SQL_DB.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/Stock.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/filter_data.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/financial_calcs.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/main.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/plot_data.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/real_time_data.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/s&amp;p_500.csv" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/scratch.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/sql-test.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/stock_screener.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/technical_analysis.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -236,7 +241,14 @@
       <option name="project" value="LOCAL" />
       <updated>1620784304654</updated>
     </task>
-    <option name="localTasksCounter" value="2" />
+    <task id="LOCAL-00002" summary="Created MySQL database to store stock data. Split code up into multiple modules: SQL_DB class to read/write to SQL db, Stock class, and Plot class for plotting each stock.">
+      <created>1624111849655</created>
+      <option name="number" value="00002" />
+      <option name="presentableId" value="LOCAL-00002" />
+      <option name="project" value="LOCAL" />
+      <updated>1624111849655</updated>
+    </task>
+    <option name="localTasksCounter" value="3" />
     <servers />
   </component>
   <component name="Vcs.Log.Tabs.Properties">
@@ -253,7 +265,8 @@
   </component>
   <component name="VcsManagerConfiguration">
     <MESSAGE value="Added histogram to MACD chart. Filtered weekend data out of charts. Changed prices to candlestick chart." />
-    <option name="LAST_COMMIT_MESSAGE" value="Added histogram to MACD chart. Filtered weekend data out of charts. Changed prices to candlestick chart." />
+    <MESSAGE value="Created MySQL database to store stock data. Split code up into multiple modules: SQL_DB class to read/write to SQL db, Stock class, and Plot class for plotting each stock." />
+    <option name="LAST_COMMIT_MESSAGE" value="Created MySQL database to store stock data. Split code up into multiple modules: SQL_DB class to read/write to SQL db, Stock class, and Plot class for plotting each stock." />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
