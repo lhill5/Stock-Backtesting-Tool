@@ -55,11 +55,14 @@ for ticker in sp500_tickers_elem:
 #     filewriter = csv.writer(stocklist, delimiter=',')
 #     for stock in stock_tickers:
 #         filewriter.writerow([stock])
-#
-with open('../s&p_500.csv', 'w') as sp500_list:
+
+
+with open('s&p_500.csv', 'w') as sp500_list:
     filewriter = csv.writer(sp500_list, delimiter=',')
     for stock in sp500_tickers:
+        print(stock)
         filewriter.writerow([stock])
 
 
 driver.quit()
+

@@ -1,4 +1,7 @@
 import math
+from datetime import timedelta, date
+from financial_calcs import trading_days_ago, round_date
+
 
 def calculate_gains(principal, annual_gain, num_years):
 	if annual_gain == 0:
@@ -18,9 +21,17 @@ def calculate_gains(principal, annual_gain, num_years):
 	return round(comp_interest, 2)
 
 
-principal = 100
-percent = 11621.88
-years = 23.92
-rst = calculate_gains(principal, percent, years)
+# test calculate_gains function
+# _______________________________
+# principal = 100
+# percent = 11621.88
+# years = 23.92
+# rst = calculate_gains(principal, percent, years)
+# print(f'principal = {principal}, result = ${rst}')
 
-print(f'principal = {principal}, result = ${rst}')
+# test trading_days_ago function
+# _______________________________
+date = date(2021, 5, 16)
+start_date = round_date(date)
+
+print(start_date)
