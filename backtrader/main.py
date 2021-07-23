@@ -1,24 +1,24 @@
 from Stock import Stock
+from Graph import Graph
 from SQL_DB import SQL_DB
 import time
 import datetime
+import pandas as pd
 
 
-def main():
+start_time = time.time()
+database = SQL_DB(update=False)
 
-    start_time = time.time()
-    database = SQL_DB(update=False)
+start_date, end_date = datetime.date(2020,1,1), datetime.date(2021,1,1)
+# create Stock objects to plot/screen from
+ticker = 'MSFT'
 
-    start_date, end_date = datetime.date(2020,1,1), datetime.date(2021,1,1)
-    # create Stock objects to plot/screen from
-    for ticker in database.stocks:
-        # database.sql_push(ticker)
-        # if ticker != 'AAPL':
-        #     continue
+stock = Stock('msft', start_date=datetime.date(2020,1,1), end_date=datetime.date(2021,7,11))
+MSFT = stock.stock_dict
+df = pd.DataFrame(MSFT)
 
-        print(ticker)
-        stock = Stock(ticker, start_date, end_date)
-
+fig = Graph(ticker, stock.stock_dict, stock.tech_indicators, stock.date_to_index)
+fig.plot()
 
         # query_rst = database.read_query(query)
         # dates, open_price, high_price, low_price, close_price, adj_close_price, volume = query_rst
@@ -37,11 +37,5 @@ def main():
 # dates, prices, open_price, high_price, low_price, close_price = stock_data['dates'], stock_data['prices'], stock_data['open'], stock_data['high'], stock_data['low'], stock_data['close']
 # stock = Stock(ticker, dates, prices, open_price, high_price, low_price, close_price)
 
-    end_time = time.time()
-
-    print(f'program finished in {round(end_time - start_time, 1)} seconds')
-
-
-if __name__ == '__main__':
-    main()
-
+end_time = time.time()
+print(f'program finished in {round(end_time - start_time, 1)} seconds')

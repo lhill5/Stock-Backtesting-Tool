@@ -1,5 +1,5 @@
 import math
-from datetime import timedelta
+import datetime
 
 
 def rank_trade_signals(trade_signals, min_date, max_date):
@@ -79,7 +79,7 @@ def subtract_dates(beg_date, end_date):
 
 
 def add_dates(date, num_days):
-	return date + timedelta(num_days)
+	return date + datetime.timedelta(num_days)
 
 
 def calculate_AROR(principal, sell_price, num_days):
@@ -136,7 +136,7 @@ def trading_days_ago(date, num_days):
 	# figure out difference of current weekday from monday (friday - monday = 4 trading days)
 	days_since_monday = date.weekday() # figures of day # of week (monday=0, sunday=6)
 	if num_days < days_since_monday:
-		return date - timedelta(days=num_days)
+		return date - datetime.timedelta(days=num_days)
 
 	num_days -= days_since_monday
 	day_count = days_since_monday
@@ -154,7 +154,7 @@ def trading_days_ago(date, num_days):
 
 	day_count += num_days
 
-	start_date = date - timedelta(days=day_count)
+	start_date = date - datetime.timedelta(days=day_count)
 	return start_date
 
 
@@ -163,6 +163,29 @@ def round_date(date):
 	day_num = date.weekday()
 	# if weekend
 	if day_num in [5,6]:
-		return date - timedelta(days=day_num-4) # friday = 4
+		return date - datetime.timedelta(days=day_num-4) # friday = 4
 	return date
+
+
+def get_last_trading_day():
+	today = datetime.date.today()
+	weekday = today.weekday()
+	# if today is a weekend
+	if weekday > 4:
+		rst = today - datetime.timedelta(days=weekday-4)
+	else:
+		rst = today
+
+	# if market hasn't closed yet then latest trading day is yesterday
+	ts = datetime.datetime.now()
+	hour, minute = ts.hour, ts.minute
+	# if it's M-F and market hasn't closed yet get last trading date
+	if hour < 16 and weekday <= 4:
+		# if it's monday, then last trading day was friday
+		if weekday == 0:
+			rst = rst - datetime.timedelta(days=3)
+		else:
+			rst = rst - datetime.timedelta(days=1)
+
+	return rst
 

@@ -1,0 +1,19 @@
+{% extends base %}
+
+{% block title %}Stock Backtester{% endblock %}
+
+{% block preamble %}
+    <script src="backtrader/static/js/custom.js?version=<%= Common.GetVersion%>" type="text/javascript"></script>
+    <link rel="stylesheet" type="text/css" href="backtrader/static/css/style.css?version=<%= Common.GetVersion%>" />
+
+    <style>
+        @import url(https://fonts.googleapis.com/css?family=Noto+Sans);
+        body {
+        font-family: 'Noto Sans', sans-serif;
+        -webkit-font-smoothing: antialiased;
+        text-rendering: optimizeLegibility;
+        color: #fff;
+        }
+    </style>
+{% endblock %}
+

@@ -1,6 +1,6 @@
 import math
-from datetime import timedelta, date
-from financial_calcs import trading_days_ago, round_date
+from datetime import date
+from backtrader.financial_calcs import round_date
 
 
 def calculate_gains(principal, annual_gain, num_years):
