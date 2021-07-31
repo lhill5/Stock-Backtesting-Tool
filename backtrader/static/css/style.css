@@ -1,3 +1,4 @@
+
 body {
     background: #2f2f2f;
 }
@@ -7,5 +8,26 @@ body {
   justify-content: space-between;
   margin-left: 20px;
   padding-left: 20px;
+}
+
+.stock_picker_color {
+
+}
+
+input.choices__input.choices__input--cloned {
+    color: white;
+}
+
+.choices__inner {
+    height: 20px;
+}
+
+.choices__list {
+    background: #2f2f2f;
+    font-color: #ffffff;
+}
+
+.choices__item:hover {
+    background: #ffff00;
 }
 

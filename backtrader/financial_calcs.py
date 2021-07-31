@@ -189,3 +189,16 @@ def get_last_trading_day():
 
 	return rst
 
+
+def convert_str_to_date(str):
+	format = "%Y-%m-%d"
+	dt_object = datetime.datetime.strptime(str, format).date()
+	return dt_object
+
+
+def divide(a, b):
+	if b != 0:
+		return a / b
+	else:
+		return 0
+

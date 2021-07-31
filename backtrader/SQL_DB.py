@@ -36,9 +36,9 @@ class SQL_DB:
         print(f'{len(self.stocks)} stocks in sql db')
 
         if self.update or self.update_list is not None:
-            self.debug = False
+            self.debug = True
             if self.debug:
-                self.stocks = ['FVIV', 'DTM-WI', 'CHAQ-U', 'BST-RT']
+                self.stocks = ['AAPL', 'FVIV', 'DTM-WI', 'CHAQ-U', 'BST-RT']
             elif self.update_list is not None:
                 self.stocks = self.update_list
 
@@ -388,6 +388,51 @@ class SQL_DB:
         return latest_row[0][0]
 
 
+    def get_earliest_offset_sql_date(self, ticker, col, offset):
+        ticker = ticker.replace('-', '')
+
+        query = f"""
+                SELECT a.{col}
+                FROM (
+                    SELECT *
+                    FROM {ticker}_table
+                    order by date asc
+                    limit {offset+1}
+                ) a
+                order by a.date desc
+                limit 1
+                """
+        latest_row = self.read_query(query)
+        if latest_row == -1 or latest_row == []:
+            return None
+        return latest_row[0][0]
+
+
+    def get_prev_x_rows(self, ticker, col, start_date, x_rows):
+        ticker = ticker.replace('-', '')
+
+        query = f"""
+                select {col}
+                from (
+                    select *
+                    from stock_data.{ticker}_table
+                    where date < '{start_date}'
+                    order by date desc
+                    limit {x_rows}
+                ) a
+                order by a.date asc
+                """
+
+        query_output = self.read_query(query)
+        data = []
+        if query_output != -1 and query_output != []:
+            for price in query_output:
+                data.append(float(price[0]))
+        else:
+            print(f'error reading from {ticker}_table')
+        return data
+
+
     def get_latest_non_null_col(self, ticker, col):
         ticker = ticker.replace('-', '')
 
@@ -457,4 +502,8 @@ class SQL_DB:
             DROP TABLE {table_name}
         """
         self.execute_query(query)
+
+
+if __name__ == "__main__":
+    pass
 

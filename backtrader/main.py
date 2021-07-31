@@ -9,15 +9,18 @@ import pandas as pd
 start_time = time.time()
 database = SQL_DB(update=False)
 
-start_date, end_date = datetime.date(2020,1,1), datetime.date(2021,1,1)
+start_date, end_date = datetime.date(2019,1,1), datetime.date(2020,1,1)
 # create Stock objects to plot/screen from
 ticker = 'MSFT'
 
-stock = Stock('msft', start_date=datetime.date(2020,1,1), end_date=datetime.date(2021,7,11))
+# stock = Stock('msft')
+# stock gets instance of SQL_DB in order to read from SQL to update the stock's data
+stock = Stock('msft', database, start_date=start_date, end_date=end_date)
+
 MSFT = stock.stock_dict
 df = pd.DataFrame(MSFT)
 
-fig = Graph(ticker, stock.stock_dict, stock.tech_indicators, stock.date_to_index)
+fig = Graph(stock, database.stocks)
 fig.plot()
 
         # query_rst = database.read_query(query)

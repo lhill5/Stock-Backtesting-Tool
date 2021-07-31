@@ -2,16 +2,14 @@ from technical_analysis import get_MACD, get_SMA, get_EMA, get_RSI
 from collections import defaultdict
 import datetime
 
-from SQL_DB import SQL_DB
-from Graph import Graph
 
+class Stock:
 
-class Stock(SQL_DB):
-
-    def __init__(self, ticker, start_date=None, end_date=None):
-        super().__init__()
+    def __init__(self, ticker, SQL, start_date=None, end_date=None):
+        # super().__init__()
 
         self.ticker = ticker
+        self.SQL = SQL
         self.ticker_letters = ticker.replace('-', '')
 
         self.dates = []
@@ -19,35 +17,30 @@ class Stock(SQL_DB):
         self.tech_indicators = defaultdict(list)
         self.moving_averages = [9,50,150,200]
 
+        # gets min/max dates from SQL table, used to ensure user doesn't request date outside of these date ranges
+        self.valid_start_date = self.SQL.get_earliest_sql_date(self.ticker)
+        self.valid_end_date = self.SQL.get_latest_sql_date(self.ticker)
+
+        # gets an offset start date in order to calculate technical indicators that need 'x' number of previous rows for calculation
+        self.valid_start_date_offset = self.SQL.get_earliest_offset_sql_date(self.ticker, 'date', 200)
+        assert(self.valid_start_date_offset < self.valid_end_date)
+
+        # sets start/end date. If user didn't enter start/end date then show all data. If invalid input, set to valid dates based on above variables
+        self.start_date = self.valid_start_date_offset if start_date is None else max(start_date, self.valid_start_date)
+        self.end_date = self.valid_end_date if end_date is None else min(end_date, self.valid_end_date)
+
+        # queries SQL database for this ticker's stock prices between start date / end date
         self.query_stock_prices()
+        self.get_tech_indicators()  # automatically filters results between start/end dates
 
-        dates = self.dates
-        self.min_date, self.max_date = dates[0], dates[-1]
-        self.start_date = max(start_date, self.min_date) if start_date is not None else self.min_date
-        self.end_date = min(end_date, self.max_date) if end_date is not None else self.max_date
-
-        self.date_to_index = get_date_to_index(dates, self.min_date, self.max_date)
-        self.index_to_date = get_index_to_date(dates, self.min_date, self.max_date)
+        self.date_to_index = get_date_to_index(self.dates, self.start_date, self.end_date)
+        self.index_to_date = get_index_to_date(self.dates, self.start_date, self.end_date)
         self.unique_indices = list(self.index_to_date.keys())
 
         # used for slicing dates/prices/etc. lists by index
         self.start_date_index = self.date_to_index[self.start_date]
         self.end_date_index = self.date_to_index[self.end_date]
         self.filtered_unique_indices = self.unique_indices[self.start_date_index:self.end_date_index+1]
-        self.filtered_unique_indices = self.unique_indices
-
-        self.get_tech_indicators()  # automatically filters results between start/end dates
-        self.filter_query_data()  # filters dates/prices between start and end date
-
-        self.min_date, self.max_date = dates[0], dates[-1]
-        self.date_to_index = get_date_to_index(self.dates, self.min_date, self.max_date)
-        self.index_to_date = get_index_to_date(self.dates, self.min_date, self.max_date)
-        self.unique_indices = list(self.index_to_date.keys())
-
-        # used for slicing dates/prices/etc. lists by index
-        self.start_date_index = self.date_to_index[self.start_date]
-        self.end_date_index = self.date_to_index[self.end_date]
-        self.filtered_unique_indices = self.unique_indices[self.start_date_index:self.end_date_index + 1]
         self.filtered_unique_indices = self.unique_indices
 
         self.stock_dict = {'date': [str(d) for d in self.dates], 'open': self.prices['open'], 'high': self.prices['high'], 'low': self.prices['low'], 'close': self.prices['close'], 'adj_close': self.prices['adj_close'], 'volume': self.prices['volume']}
@@ -84,14 +77,11 @@ class Stock(SQL_DB):
         # self.percent_change = pd.Series(self.adj_close_price).pct_change()
 
 
-    def query_stock_prices(self, start_date=None, end_date=None):
+    def query_stock_prices(self):
         cols = "date, open, high, low, close, adj_close, volume"
-        if start_date and end_date:
-            query = f"SELECT {cols} FROM {self.ticker_letters}_table WHERE date >= {start_date} and date <= {end_date}"
-        else:
-            query = f"SELECT {cols} FROM {self.ticker_letters}_table"
+        query = f"SELECT {cols} FROM {self.ticker_letters}_table WHERE date >= '{self.start_date}' and date <= '{self.end_date}'"
 
-        query_output = self.read_query(query)
+        query_output = self.SQL.read_query(query)
         if query_output != -1 and query_output != []:
             for row in query_output:
                 date, open_price, high_price, low_price, close_price, adj_close_price, volume = row
@@ -104,6 +94,7 @@ class Stock(SQL_DB):
                 self.prices['volume'].append(volume)
         else:
             print(f'error reading from {self.ticker_letters}_table')
+        assert(len(self.prices['open']) != 0)
 
 
     def filter_query_data(self):
@@ -157,14 +148,18 @@ class Stock(SQL_DB):
 
 
     def get_tech_indicators(self):
-        dates = self.dates
-        prices = self.prices['close']
-        start, end = self.start_date_index, self.end_date_index+1
 
-        MACD, signal, histogram = get_MACD(prices[start - 33: end])
-        EMAs = {n:get_EMA(prices[start - n: end], n+1) for n in self.moving_averages}
-        SMAs = {n: get_SMA(prices[start - n: end], n+1) for n in self.moving_averages}
-        RSI = get_RSI(prices[start - 15: end])
+        x_days = max(self.moving_averages)
+        prev_prices = self.SQL.get_prev_x_rows(self.ticker, 'close', self.start_date, x_days)
+        curr_prices = self.prices['close']
+        prices = prev_prices + curr_prices
+
+        assert(len(prices) == (len(curr_prices) + x_days))
+        start = len(prev_prices)
+        MACD, signal, histogram = get_MACD(prices[start - 33:])
+        EMAs = {n:get_EMA(prices[start - n:], n+1) for n in self.moving_averages}
+        SMAs = {n: get_SMA(prices[start - n:], n+1) for n in self.moving_averages}
+        RSI = get_RSI(prices[start - 15:])
 
         self.tech_indicators['MACD'] = MACD
         self.tech_indicators['signal'] = signal
@@ -178,7 +173,7 @@ class Stock(SQL_DB):
     def get_column(self, column_name):
         # not tested
         query = f"SELECT {column_name} FROM stock_list"
-        data = self.read_query(query)
+        data = self.SQL.read_query(query)
         data = [d[0] for d in data]
         return data
 
@@ -188,13 +183,13 @@ class Stock(SQL_DB):
         ALTER TABLE {self.ticker_letters}_table
         DROP {col_name}
         """
-        self.execute_query(query)
+        self.SQL.execute_query(query)
 
         query = f"""
         ALTER TABLE {self.ticker_letters}_table
         ADD {col_name} DECIMAL({sig_digits},{after_decimal})
         """
-        self.execute_query(query)
+        self.SQL.execute_query(query)
 
         insert_data_query = f"""
         INSERT INTO {self.ticker_letters}_table
@@ -202,8 +197,8 @@ class Stock(SQL_DB):
         VALUES (%s)
         """
 
-        data = self.sql_format_data(data)
-        self.multiline_query(insert_data_query, data)
+        data = self.SQL.sql_format_data(data)
+        self.SQL.multiline_query(insert_data_query, data)
 
 
     def write_columns(self, data, col_name, sig_digits, after_decimal):
@@ -214,28 +209,28 @@ class Stock(SQL_DB):
             ADD {col} DECIMAL({sig_digits},{after_decimal});
             """
             data = [[d] for d in data]
-            self.multiline_query(query, data)
+            self.SQL.multiline_query(query, data)
 
 
-    def update_row(self, row_id, cols, vals):
-
-        vals_list = list(vals)
-        for i, val in enumerate(vals_list):
-            vals_list[i] = val if val is None or isinstance(val, datetime.date) else round(val, 5)
-        vals = tuple(vals_list)
-
-        sel_cols = ""
-        for i, col in enumerate(cols):
-            sel_cols += f'{col}=%s'
-            if col != cols[-1]:
-                sel_cols += ', '
-
-        query = f"""
-        UPDATE {self.ticker_letters}_table
-        SET {sel_cols}
-        WHERE date=%s
-        """
-        self.multicol_query(query, vals)
+    # def update_row(self, row_id, cols, vals):
+    #
+    #     vals_list = list(vals)
+    #     for i, val in enumerate(vals_list):
+    #         vals_list[i] = val if val is None or isinstance(val, datetime.date) else round(val, 5)
+    #     vals = tuple(vals_list)
+    #
+    #     sel_cols = ""
+    #     for i, col in enumerate(cols):
+    #         sel_cols += f'{col}=%s'
+    #         if col != cols[-1]:
+    #             sel_cols += ', '
+    #
+    #     query = f"""
+    #     UPDATE {self.ticker_letters}_table
+    #     SET {sel_cols}
+    #     WHERE date=%s
+    #     """
+    #     self.SQL.multicol_query(query, vals)
 
 
     def delete_columns(self, cols, ticker):
@@ -247,7 +242,7 @@ class Stock(SQL_DB):
             DROP {col}
             ;
             """
-            self.execute_query(query)
+            self.SQL.execute_query(query)
 
 
 def daterange(start_date, end_date):
@@ -289,3 +284,6 @@ def get_index_to_date(dates, min_date, max_date):
             index_to_date[i] = d
     return index_to_date
 
+
+if __name__ == '__main__':
+    pass

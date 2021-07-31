@@ -30,7 +30,7 @@ y = np.random.random(size=4000) * 100
 radii = np.random.random(size=4000) * 1.5
 colors = ["#%02x%02x%02x" % (int(r), int(g), 150) for r, g in zip(50+2*x, 30+2*y)]
 
-p = figure(tools="pan,wheel_zoom,zoom_in,zoom_out,reset")
+p = figure(tools="pan,wheel_zoom,zoom_in,zoom_out,reset", width=1000, height=800, toolbar_location="below")
 p.scatter(x, y, radius=np.random.random(size=4000) * 1.5,
           fill_color=colors, fill_alpha=0.6, line_color=None)
 
