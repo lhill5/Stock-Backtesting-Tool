@@ -1,0 +1,75 @@
+Income Statement
+________________________________________________________________________________
+
+WSJ Name    |    Polygon Name
+
+
+Sales/Revenue ->    revenues
+
+Cost of Goods Sold (COGS) incl. D&A ->    cost_of_revenue
+
+Gross Income ->     gross_profit
+
+SG&A Expense ->     operating_expenses
+
+EBIT	-> operating_income_loss
+
+Gross Interest Expense -> interest_expense_operating
+
+Pretax Income	-> income_loss_from_continuing_operations_before_tax
+
+Income Tax	-> income_tax_expense_benefit
+
+________________________________________________________________________________
+Net Income             -> net_income_loss
+
+Net Income Available to Common ->   net_income_loss_available_to_common_stockholders_basic
+
+Consolidated Net Income         -> net_income_loss_attributable_to_parent
+
+Net Income After Extraordinaries (operating income)    -> income_loss_from_continuing_operations_after_tax
+operating income -> operating_income_loss
+
+________________________________________________________________________________
+
+EPS (Basic) -> basic_earnings_per_share
+EPS (Diluted) -> diluted_earnings_per_share
+
+Balance Sheet
+________________________________________________________________________________
+
+Total Current Assets    -> current_assets
+
+Total Non-Current Assets -> noncurrent_assets
+
+Fixed Assets (Properties) -> fixed_assets
+
+Total Assets            -> assets
+
+Total Current Liabilities -> current_liabilities
+
+Total Non-Current Liabilities -> noncurrent_liabilities
+
+Total Liabilities         -> liabilities
+
+Common Equity (Total)     -> equity_attributable_to_parent
+Total Shareholders' Equity -> equity
+Total Equity -> equity
+
+Liabilities & Shareholders' Equity -> liabilities_and_equity
+
+
+Cash Flow Statement
+________________________________________________________________________________
+
+Net Operating Cash Flow	-> net_cash_flow_from_operating_activities_continuing
+                        -> net_cash_flow_from_operating_activities
+
+Net Investing Cash Flow	-> net_cash_flow_from_investing_activities_continuing
+                        -> net_cash_flow_from_investing_activities
+
+Net Financing Cash Flow	-> net_cash_flow_from_financing_activities_continuing
+                        -> net_cash_flow_from_financing_activities
+
+Net Cash Flow (Operating + Investing + Financing) -> net_cash_flow_continuing
+                                                  -> net_cash_flow

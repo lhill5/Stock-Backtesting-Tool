@@ -82,11 +82,15 @@ def add_dates(date, num_days):
 	return date + datetime.timedelta(num_days)
 
 
-def calculate_AROR(principal, sell_price, num_days):
-	gains = sell_price - principal
-	AROR = (pow(((principal + gains) / principal), (365 / num_days)) - 1) * 100
+def calculate_AROR(start_price, end_price, num_days):
+	gains = end_price - start_price
+	AROR = (pow(((start_price + gains) / start_price), (365 / num_days)) - 1) * 100
 	return AROR
 
+
+def investment_return(principal, percentage):
+	rst = principal * (1 + (percentage / 100))
+	return rst
 
 def calculate_AP(bought, sold, min_date, max_date):
 	G = sold - bought

@@ -3,7 +3,7 @@ import pandas as pd
 from bokeh.io import output_file, show
 from bokeh.plotting import figure
 from bokeh.models import CustomJS, ColumnDataSource
-from backtrader.Stock import Stock
+from stock_package.backtrader.Stock import Stock
 import datetime
 
 

@@ -1,0 +1,114 @@
+
+{
+    "fixed_assets": {
+        "label": "Fixed Assets",
+        "value": 39440000000.0,
+        "unit": "USD",
+        "order": 400
+    },
+    "equity_attributable_to_noncontrolling_interest": {
+        "label": "Equity Attributable To Noncontrolling Interest",
+        "value": 0,
+        "unit": "USD",
+        "order": 1500
+    },
+    "current_liabilities": {
+        "label": "Current Liabilities",
+        "value": 125481000000.0,
+        "unit": "USD",
+        "order": 700
+    },
+    "liabilities_and_equity": {
+        "label": "Liabilities And Equity",
+        "value": 351002000000.0,
+        "unit": "USD",
+        "order": 1900
+    },
+    "noncurrent_liabilities": {
+        "label": "Noncurrent Liabilities",
+        "value": 162431000000.0,
+        "unit": "USD",
+        "order": 800
+    },
+    "equity_attributable_to_parent": {
+        "label": "Equity Attributable To Parent",
+        "value": 63090000000.0,
+        "unit": "USD",
+        "order": 1600
+    },
+    "assets": {
+        "label": "Assets",
+        "value": 351002000000.0,
+        "unit": "USD",
+        "order": 100
+    },
+    "current_assets": {
+        "label": "Current Assets",
+        "value": 134836000000.0,
+        "unit": "USD",
+        "order": 200
+    },
+    "noncurrent_assets": {
+        "label": "Noncurrent Assets",
+        "value": 216166000000.0,
+        "unit": "USD",
+        "order": 300
+    },
+    "other_than_fixed_noncurrent_assets": {
+        "label": "Other Than Fixed Noncurrent Assets",
+        "value": 216166000000.0,
+        "unit": "USD",
+        "order": 500
+    },
+    "equity": {
+        "label": "Equity",
+        "value": 63090000000.0,
+        "unit": "USD",
+        "order": 1400
+    },
+    "liabilities": {
+        "label": "Liabilities",
+        "value": 287912000000.0,
+        "unit": "USD",
+        "order": 600
+    }
+},
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+{
+    "fixed_assets": {
+        "label": "Fixed Assets",
+        "value": 39440000000.0,
+        "unit": "USD",
+        "order": 400
+    },
+    "equity_attributable_to_noncontrolling_interest": {
+        "label": "Equity Attributable To Noncontrolling Interest",
+        "value": 0,
+        "unit": "USD",
+        "order": 1500
+    }
+}

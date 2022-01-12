@@ -1,37 +1,99 @@
 from technical_analysis import get_MACD, get_SMA, get_EMA, get_RSI
 from collections import defaultdict
 import datetime
+import pdb
+import time
+import connectorx as cx
 
 
 class Stock:
 
     def __init__(self, ticker, SQL, start_date=None, end_date=None):
+        # pdb.set_trace()
         # super().__init__()
+        # print(ticker)
 
         self.ticker = ticker
         self.SQL = SQL
         self.ticker_letters = ticker.replace('-', '')
+        self.error = False
 
         self.dates = []
         self.prices = defaultdict(list)
         self.tech_indicators = defaultdict(list)
         self.moving_averages = [9,50,150,200]
 
+        start_time = time.time()
+        # update stock if no data
+        earliest_date = self.SQL.get_earliest_sql_date(self.ticker)
+        if earliest_date is None:
+            self.SQL.update_table(self.ticker)
+
         # gets min/max dates from SQL table, used to ensure user doesn't request date outside of these date ranges
-        self.valid_start_date = self.SQL.get_earliest_sql_date(self.ticker)
+        self.valid_start_date = earliest_date
         self.valid_end_date = self.SQL.get_latest_sql_date(self.ticker)
+        end_time = time.time()
+        # print(f'sql query program finished in {round((end_time - start_time), 1)} seconds')
+
+
+        # start_time = time.time()
+        # for i in range(10000):
+        #     self.valid_start_date = self.SQL.get_earliest_sql_date(self.ticker)
+        # end_time = time.time()
+        # print(f'sql query program finished in {round(end_time - start_time, 1)} seconds')
+
+        # if stock still has no data, move onto next stock
+        if self.valid_start_date is None or self.valid_end_date is None:
+            return
+
+        # if user tries querying between invalid start/end date (don't have data between these time periods) then move onto next stock
+        if not (start_date >= self.valid_start_date and end_date <= self.valid_end_date):
+            return
 
         # gets an offset start date in order to calculate technical indicators that need 'x' number of previous rows for calculation
+        # start_time = time.time()
         self.valid_start_date_offset = self.SQL.get_earliest_offset_sql_date(self.ticker, 'date', 200)
-        assert(self.valid_start_date_offset < self.valid_end_date)
+        # end_time = time.time()
+        # print(f'sql query program finished in {round((end_time - start_time)*1000, 1)} ms')
+
+        # if not enough data to calculate EMA 200 (200 day offset) then move onto next stock
+        if self.valid_start_date_offset >= self.valid_end_date:
+            return
 
         # sets start/end date. If user didn't enter start/end date then show all data. If invalid input, set to valid dates based on above variables
         self.start_date = self.valid_start_date_offset if start_date is None else max(start_date, self.valid_start_date)
         self.end_date = self.valid_end_date if end_date is None else min(end_date, self.valid_end_date)
 
         # queries SQL database for this ticker's stock prices between start date / end date
-        self.query_stock_prices()
-        self.get_tech_indicators()  # automatically filters results between start/end dates
+        # start_time = time.time()
+        error = self.query_stock_prices()
+        # end_time = time.time()
+        # print(f'sql query program finished in {round((end_time - start_time)*1000, 1)} ms')
+
+
+        # start_time = time.time()
+        # for i in range(10000):
+        #     cols = "date, open, high, low, close, adj_close, volume"
+        #     query = f"SELECT {cols} FROM {self.ticker_letters}_table WHERE date >= '{self.start_date}' and date <= '{self.end_date}'"
+        #
+        #     df = cx.read_sql(f"mysql://root:mssqlserver44@localhost:3306/stock_data", query)
+        #     df = df.values.tolist()
+        #     # error = self.query_stock_prices()
+        #
+        # end_time = time.time()
+        # print(f'sql query program finished in {round(end_time - start_time, 1)} seconds')
+
+        if error == -1:
+            self.error = True
+            return
+
+        rst = self.get_tech_indicators()  # automatically filters results between start/end dates
+
+        # if not enough stock data to calculate the technical indicators, move onto next stock
+
+        if rst == 0:
+            print("couldn't calculate tech indicators")
+            return
 
         self.date_to_index = get_date_to_index(self.dates, self.start_date, self.end_date)
         self.index_to_date = get_index_to_date(self.dates, self.start_date, self.end_date)
@@ -58,7 +120,7 @@ class Stock:
         # self.dates, filtered_data = filter_between(self.dates, self.prices, self.open_price, self.high_price, self.low_price, self.close_price, start_date=tmp_start_date, end_date=self.end_date)
         # self.prices, self.open_price, self.high_price, self.low_price, self.close_price = filtered_data
 
-        # self.MACD_signals = backtest_MACD(dates, prices, self.tech_indicators)
+        # self.MACD_signals = x(dates, prices, self.tech_indicators)
         # self.EMA_signals = backtest_EMA(dates, prices, self.tech_indicators)
         # self.RSI_signals = backtest_RSI(dates, prices, self.tech_indicators)
 
@@ -80,6 +142,7 @@ class Stock:
     def query_stock_prices(self):
         cols = "date, open, high, low, close, adj_close, volume"
         query = f"SELECT {cols} FROM {self.ticker_letters}_table WHERE date >= '{self.start_date}' and date <= '{self.end_date}'"
+        # query = f"SELECT {cols} FROM {self.ticker_letters}_table limit 1"
 
         query_output = self.SQL.read_query(query)
         if query_output != -1 and query_output != []:
@@ -94,7 +157,9 @@ class Stock:
                 self.prices['volume'].append(volume)
         else:
             print(f'error reading from {self.ticker_letters}_table')
-        assert(len(self.prices['open']) != 0)
+
+        if len(self.prices['open']) == 0:
+            return -1
 
 
     def filter_query_data(self):
@@ -154,7 +219,9 @@ class Stock:
         curr_prices = self.prices['close']
         prices = prev_prices + curr_prices
 
-        assert(len(prices) == (len(curr_prices) + x_days))
+        if len(prices) != (len(curr_prices) + x_days):
+            return 0
+
         start = len(prev_prices)
         MACD, signal, histogram = get_MACD(prices[start - 33:])
         EMAs = {n:get_EMA(prices[start - n:], n+1) for n in self.moving_averages}
@@ -168,6 +235,7 @@ class Stock:
 
         self.tech_indicators['EMA'] = EMAs
         self.tech_indicators['SMA'] = SMAs
+        return 1
 
 
     def get_column(self, column_name):

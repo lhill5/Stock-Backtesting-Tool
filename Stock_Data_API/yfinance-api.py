@@ -1,5 +1,5 @@
 import yfinance as yf
-from backtrader.SQL_DB import SQL_DB
+from stock_package.backtrader.SQL_DB import SQL_DB
 from multiprocessing import Pool, cpu_count
 import time
 

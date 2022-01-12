@@ -1,21 +1,63 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="ChangeListManager">
-    <list default="true" id="3d3888e4-2b99-4577-b0e8-ad48e3042e22" name="Default Changelist" comment="Created MySQL database to store stock data. Split code up into multiple modules: SQL_DB class to read/write to SQL db, Stock class, and Plot class for plotting each stock.">
-      <change afterPath="$PROJECT_DIR$/bokeh_testing/annotations.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/finance_modeling_prep.py" afterDir="false" />
+    <list default="true" id="3d3888e4-2b99-4577-b0e8-ad48e3042e22" name="Default Changelist" comment="Updated Bokeh graph to select between stocks, change start/end date, and select which technical indicators to show/hide. Working on changing to financial modeling prep to get more reliable stock data and for getting financial analysis data as well (balance sheets, cash flow statements, etc.)">
+      <change afterPath="$PROJECT_DIR$/Stock_Data_API/Alpaca_API.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/Stock_Data_API/Quandl.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/Stock_Data_API/alpha_vantage.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/Stock_Data_API/financial_names" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/Stock_Data_API/iex_api.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/Stock_Data_API/polygon_api.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/Stock_Data_API/polygon_balance.json" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/Stock_Data_API/polygon_cashflow.json" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/etc/test.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/run.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/stock_package/__init__.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/stock_package/backtrader/Graph.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/stock_package/backtrader/SQL_DB.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/stock_package/backtrader/StockData_API.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/stock_package/backtrader/alter_SQL_tables.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/stock_package/backtrader/candlestick_patterns.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/stock_package/backtrader/fundamentalData_API.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/stock_package/backtrader/main.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/stock_package/backtrader/random_functions.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/stock_package/backtrader/trading_strategies.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/stock_package/test_code/local_minmax.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/stock_package/test_code/local_minmax_v2.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/Stocks.iml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/Stocks.iml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/misc.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/misc.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/API_trading.py" beforeDir="false" afterPath="$PROJECT_DIR$/Alpaca_API.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backtrader/Graph.py" beforeDir="false" afterPath="$PROJECT_DIR$/backtrader/Graph.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backtrader/SQL_DB.py" beforeDir="false" afterPath="$PROJECT_DIR$/backtrader/SQL_DB.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backtrader/Stock.py" beforeDir="false" afterPath="$PROJECT_DIR$/backtrader/Stock.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backtrader/financial_calcs.py" beforeDir="false" afterPath="$PROJECT_DIR$/backtrader/financial_calcs.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backtrader/main.py" beforeDir="false" afterPath="$PROJECT_DIR$/backtrader/main.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backtrader/main2.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/backtrader/static/css/style.css" beforeDir="false" afterPath="$PROJECT_DIR$/backtrader/static/css/style.css" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backtrader/templates/index.html" beforeDir="false" afterPath="$PROJECT_DIR$/backtrader/templates/index.html" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/bokeh_testing/bokeh_events.py" beforeDir="false" afterPath="$PROJECT_DIR$/bokeh_testing/bokeh_events.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/test.py" beforeDir="false" afterPath="$PROJECT_DIR$/test.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Alpaca_API.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backtrader/Graph.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backtrader/SQL_DB.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backtrader/Stock.py" beforeDir="false" afterPath="$PROJECT_DIR$/stock_package/backtrader/Stock.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backtrader/candlestick.py" beforeDir="false" afterPath="$PROJECT_DIR$/stock_package/backtrader/candlestick.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backtrader/config.py" beforeDir="false" afterPath="$PROJECT_DIR$/stock_package/backtrader/config.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backtrader/financial_calcs.py" beforeDir="false" afterPath="$PROJECT_DIR$/stock_package/backtrader/financial_calcs.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backtrader/main.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backtrader/static/css/style.css" beforeDir="false" afterPath="$PROJECT_DIR$/stock_package/backtrader/static/css/style.css" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backtrader/static/js/custom.js" beforeDir="false" afterPath="$PROJECT_DIR$/stock_package/backtrader/static/js/custom.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backtrader/technical_analysis.py" beforeDir="false" afterPath="$PROJECT_DIR$/stock_package/backtrader/technical_analysis.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backtrader/templates/index.html" beforeDir="false" afterPath="$PROJECT_DIR$/stock_package/backtrader/templates/index.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backtrader/theme.yaml" beforeDir="false" afterPath="$PROJECT_DIR$/stock_package/backtrader/theme.yaml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/bokeh_testing/auto y-axis.py" beforeDir="false" afterPath="$PROJECT_DIR$/bokeh_testing/auto y-axis.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/cur_strat.log" beforeDir="false" afterPath="$PROJECT_DIR$/etc/cur_strat.log" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/dash-plotly tutorial.py" beforeDir="false" afterPath="$PROJECT_DIR$/etc/dash-plotly tutorial.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/filter_data.py" beforeDir="false" afterPath="$PROJECT_DIR$/etc/filter_data.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/finance_modeling_prep.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/matplotlib_plot.py" beforeDir="false" afterPath="$PROJECT_DIR$/etc/matplotlib_plot.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/prev_main_version.py" beforeDir="false" afterPath="$PROJECT_DIR$/etc/prev_main_version.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/real_time_data.py" beforeDir="false" afterPath="$PROJECT_DIR$/etc/real_time_data.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/s&amp;p_500.csv" beforeDir="false" afterPath="$PROJECT_DIR$/etc/s&amp;p_500.csv" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/sql-test.py" beforeDir="false" afterPath="$PROJECT_DIR$/etc/sql-test.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/stock_list.csv" beforeDir="false" afterPath="$PROJECT_DIR$/etc/stock_list.csv" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/stock_screener.py" beforeDir="false" afterPath="$PROJECT_DIR$/etc/stock_screener.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/test.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/test_code/test_mplfinance.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/test_code/unit_testing.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/theme.yaml" beforeDir="false" afterPath="$PROJECT_DIR$/etc/theme.yaml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/web_scraping/stock_ticker_webscrapper.py" beforeDir="false" afterPath="$PROJECT_DIR$/Stock_Data_API/stock_ticker_webscrapper.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/yfinance-api.py" beforeDir="false" afterPath="$PROJECT_DIR$/Stock_Data_API/yfinance-api.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -43,7 +85,7 @@
     <property name="DefaultHtmlFileTemplate" value="HTML File" />
     <property name="RunOnceActivity.OpenProjectViewOnStart" value="true" />
     <property name="RunOnceActivity.ShowReadmeOnStart" value="true" />
-    <property name="last_opened_file_path" value="$PROJECT_DIR$/backtrader" />
+    <property name="last_opened_file_path" value="$PROJECT_DIR$" />
     <property name="restartRequiresConfirmation" value="false" />
     <property name="run.code.analysis.last.selected.profile" value="pProject Default" />
     <property name="settings.editor.selected.configurable" value="com.jetbrains.python.configuration.PyActiveSdkModuleConfigurable" />
@@ -62,15 +104,15 @@
       <recent name="$PROJECT_DIR$" />
     </key>
     <key name="MoveFile.RECENT_KEYS">
-      <recent name="$PROJECT_DIR$/bokeh_testing" />
+      <recent name="$PROJECT_DIR$/stock_package" />
+      <recent name="$PROJECT_DIR$/etc" />
+      <recent name="$PROJECT_DIR$/Stock_Data_API" />
       <recent name="$PROJECT_DIR$/backtrader" />
-      <recent name="$PROJECT_DIR$" />
-      <recent name="$PROJECT_DIR$/test_code" />
-      <recent name="$PROJECT_DIR$/web_scraping" />
+      <recent name="$PROJECT_DIR$/bokeh_testing" />
     </key>
   </component>
-  <component name="RunManager" selected="Python.main_old">
-    <configuration name="annotations" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
+  <component name="RunManager" selected="Python.main (1)">
+    <configuration name="StockData_API" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
       <module name="Stocks" />
       <option name="INTERPRETER_OPTIONS" value="" />
       <option name="PARENT_ENVS" value="true" />
@@ -78,11 +120,11 @@
         <env name="PYTHONUNBUFFERED" value="1" />
       </envs>
       <option name="SDK_HOME" value="" />
-      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/bokeh_testing" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/stock_package/backtrader" />
       <option name="IS_MODULE_SDK" value="true" />
       <option name="ADD_CONTENT_ROOTS" value="true" />
       <option name="ADD_SOURCE_ROOTS" value="true" />
-      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/bokeh_testing/annotations.py" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/stock_package/backtrader/StockData_API.py" />
       <option name="PARAMETERS" value="" />
       <option name="SHOW_COMMAND_LINE" value="false" />
       <option name="EMULATE_TERMINAL" value="false" />
@@ -91,7 +133,7 @@
       <option name="INPUT_FILE" value="" />
       <method v="2" />
     </configuration>
-    <configuration name="bokeh_events" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
+    <configuration name="fundamentalData_API" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
       <module name="Stocks" />
       <option name="INTERPRETER_OPTIONS" value="" />
       <option name="PARENT_ENVS" value="true" />
@@ -99,11 +141,11 @@
         <env name="PYTHONUNBUFFERED" value="1" />
       </envs>
       <option name="SDK_HOME" value="" />
-      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/bokeh_testing" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/stock_package/backtrader" />
       <option name="IS_MODULE_SDK" value="true" />
       <option name="ADD_CONTENT_ROOTS" value="true" />
       <option name="ADD_SOURCE_ROOTS" value="true" />
-      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/bokeh_testing/bokeh_events.py" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/stock_package/backtrader/fundamentalData_API.py" />
       <option name="PARAMETERS" value="" />
       <option name="SHOW_COMMAND_LINE" value="false" />
       <option name="EMULATE_TERMINAL" value="false" />
@@ -112,7 +154,7 @@
       <option name="INPUT_FILE" value="" />
       <method v="2" />
     </configuration>
-    <configuration name="finance_modeling_prep" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
+    <configuration name="main (1)" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
       <module name="Stocks" />
       <option name="INTERPRETER_OPTIONS" value="" />
       <option name="PARENT_ENVS" value="true" />
@@ -120,11 +162,11 @@
         <env name="PYTHONUNBUFFERED" value="1" />
       </envs>
       <option name="SDK_HOME" value="" />
-      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/stock_package/backtrader" />
       <option name="IS_MODULE_SDK" value="true" />
       <option name="ADD_CONTENT_ROOTS" value="true" />
       <option name="ADD_SOURCE_ROOTS" value="true" />
-      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/finance_modeling_prep.py" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/stock_package/backtrader/main.py" />
       <option name="PARAMETERS" value="" />
       <option name="SHOW_COMMAND_LINE" value="false" />
       <option name="EMULATE_TERMINAL" value="false" />
@@ -133,7 +175,7 @@
       <option name="INPUT_FILE" value="" />
       <method v="2" />
     </configuration>
-    <configuration name="main" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
+    <configuration name="polygon_api" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
       <module name="Stocks" />
       <option name="INTERPRETER_OPTIONS" value="" />
       <option name="PARENT_ENVS" value="true" />
@@ -141,32 +183,11 @@
         <env name="PYTHONUNBUFFERED" value="1" />
       </envs>
       <option name="SDK_HOME" value="" />
-      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/Stock_Data_API" />
       <option name="IS_MODULE_SDK" value="true" />
       <option name="ADD_CONTENT_ROOTS" value="true" />
       <option name="ADD_SOURCE_ROOTS" value="true" />
-      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/backtrader/main.py" />
-      <option name="PARAMETERS" value="" />
-      <option name="SHOW_COMMAND_LINE" value="false" />
-      <option name="EMULATE_TERMINAL" value="false" />
-      <option name="MODULE_MODE" value="false" />
-      <option name="REDIRECT_INPUT" value="false" />
-      <option name="INPUT_FILE" value="" />
-      <method v="2" />
-    </configuration>
-    <configuration name="main_old" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
-      <module name="Stocks" />
-      <option name="INTERPRETER_OPTIONS" value="" />
-      <option name="PARENT_ENVS" value="true" />
-      <envs>
-        <env name="PYTHONUNBUFFERED" value="1" />
-      </envs>
-      <option name="SDK_HOME" value="" />
-      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$" />
-      <option name="IS_MODULE_SDK" value="true" />
-      <option name="ADD_CONTENT_ROOTS" value="true" />
-      <option name="ADD_SOURCE_ROOTS" value="true" />
-      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/backtrader/main_old.py" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/Stock_Data_API/polygon_api.py" />
       <option name="PARAMETERS" value="" />
       <option name="SHOW_COMMAND_LINE" value="false" />
       <option name="EMULATE_TERMINAL" value="false" />
@@ -187,7 +208,7 @@
       <option name="IS_MODULE_SDK" value="true" />
       <option name="ADD_CONTENT_ROOTS" value="true" />
       <option name="ADD_SOURCE_ROOTS" value="true" />
-      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/prev_main_version.py" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/etc/prev_main_version.py" />
       <option name="PARAMETERS" value="" />
       <option name="SHOW_COMMAND_LINE" value="false" />
       <option name="EMULATE_TERMINAL" value="false" />
@@ -225,11 +246,11 @@
         <env name="PYTHONUNBUFFERED" value="1" />
       </envs>
       <option name="SDK_HOME" value="" />
-      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/stock_package/backtrader" />
       <option name="IS_MODULE_SDK" value="true" />
       <option name="ADD_CONTENT_ROOTS" value="true" />
       <option name="ADD_SOURCE_ROOTS" value="true" />
-      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/test.py" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/stock_package/backtrader/test.py" />
       <option name="PARAMETERS" value="" />
       <option name="SHOW_COMMAND_LINE" value="false" />
       <option name="EMULATE_TERMINAL" value="false" />
@@ -239,21 +260,21 @@
       <method v="2" />
     </configuration>
     <list>
-      <item itemvalue="Python.stock_ticker_webscrapper" />
       <item itemvalue="Python.prev_main_version" />
-      <item itemvalue="Python.main_old" />
-      <item itemvalue="Python.annotations" />
-      <item itemvalue="Python.bokeh_events" />
-      <item itemvalue="Python.finance_modeling_prep" />
+      <item itemvalue="Python.stock_ticker_webscrapper" />
+      <item itemvalue="Python.main (1)" />
       <item itemvalue="Python.test" />
+      <item itemvalue="Python.polygon_api" />
+      <item itemvalue="Python.fundamentalData_API" />
+      <item itemvalue="Python.StockData_API" />
     </list>
     <recent_temporary>
       <list>
-        <item itemvalue="Python.main_old" />
-        <item itemvalue="Python.finance_modeling_prep" />
+        <item itemvalue="Python.main (1)" />
+        <item itemvalue="Python.fundamentalData_API" />
+        <item itemvalue="Python.polygon_api" />
+        <item itemvalue="Python.StockData_API" />
         <item itemvalue="Python.test" />
-        <item itemvalue="Python.bokeh_events" />
-        <item itemvalue="Python.annotations" />
       </list>
     </recent_temporary>
   </component>
@@ -294,7 +315,14 @@
       <option name="project" value="LOCAL" />
       <updated>1627003831362</updated>
     </task>
-    <option name="localTasksCounter" value="5" />
+    <task id="LOCAL-00005" summary="Updated Bokeh graph to select between stocks, change start/end date, and select which technical indicators to show/hide. Working on changing to financial modeling prep to get more reliable stock data and for getting financial analysis data as well (balance sheets, cash flow statements, etc.)">
+      <created>1627757896218</created>
+      <option name="number" value="00005" />
+      <option name="presentableId" value="LOCAL-00005" />
+      <option name="project" value="LOCAL" />
+      <updated>1627757896218</updated>
+    </task>
+    <option name="localTasksCounter" value="6" />
     <servers />
   </component>
   <component name="Vcs.Log.Tabs.Properties">
@@ -313,13 +341,14 @@
     <MESSAGE value="Added histogram to MACD chart. Filtered weekend data out of charts. Changed prices to candlestick chart." />
     <MESSAGE value="Created MySQL database to store stock data. Split code up into multiple modules: SQL_DB class to read/write to SQL db, Stock class, and Plot class for plotting each stock." />
     <MESSAGE value="This version uses bokeh library to plot stocks and technical indicators, compared to previous version using matplotlib. Offers better interactivity tools and better performance for larger datasets. Backtester folder is used to run bokeh server, contains js, html, cs, python scripts to create server." />
-    <option name="LAST_COMMIT_MESSAGE" value="This version uses bokeh library to plot stocks and technical indicators, compared to previous version using matplotlib. Offers better interactivity tools and better performance for larger datasets. Backtester folder is used to run bokeh server, contains js, html, cs, python scripts to create server." />
+    <MESSAGE value="Updated Bokeh graph to select between stocks, change start/end date, and select which technical indicators to show/hide. Working on changing to financial modeling prep to get more reliable stock data and for getting financial analysis data as well (balance sheets, cash flow statements, etc.)" />
+    <option name="LAST_COMMIT_MESSAGE" value="Updated Bokeh graph to select between stocks, change start/end date, and select which technical indicators to show/hide. Working on changing to financial modeling prep to get more reliable stock data and for getting financial analysis data as well (balance sheets, cash flow statements, etc.)" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
       <breakpoints>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$PROJECT_DIR$/matplotlib_plot.py</url>
+          <url>file://$PROJECT_DIR$/etc/matplotlib_plot.py</url>
           <line>371</line>
           <option name="timeStamp" value="93" />
         </line-breakpoint>
@@ -329,19 +358,39 @@
           <option name="timeStamp" value="127" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$PROJECT_DIR$/bokeh_testing/scratch2.py</url>
-          <line>3</line>
-          <option name="timeStamp" value="128" />
+          <url>file://$PROJECT_DIR$/Stock_Data_API/alpha_vantage.py</url>
+          <line>43</line>
+          <option name="timeStamp" value="246" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$PROJECT_DIR$/backtrader/Graph.py</url>
-          <line>540</line>
-          <option name="timeStamp" value="150" />
+          <url>file://$PROJECT_DIR$/stock_package/backtrader/Graph.py</url>
+          <line>466</line>
+          <option name="timeStamp" value="265" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$PROJECT_DIR$/backtrader/SQL_DB.py</url>
-          <line>187</line>
-          <option name="timeStamp" value="176" />
+          <url>file://$PROJECT_DIR$/Stock_Data_API/polygon_api.py</url>
+          <line>200</line>
+          <option name="timeStamp" value="282" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/Stock_Data_API/polygon_api.py</url>
+          <line>75</line>
+          <option name="timeStamp" value="284" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/stock_package/backtrader/SQL_DB.py</url>
+          <line>102</line>
+          <option name="timeStamp" value="301" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/stock_package/backtrader/SQL_DB.py</url>
+          <line>208</line>
+          <option name="timeStamp" value="316" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/stock_package/backtrader/SQL_DB.py</url>
+          <line>229</line>
+          <option name="timeStamp" value="320" />
         </line-breakpoint>
       </breakpoints>
       <default-breakpoints>

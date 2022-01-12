@@ -1,0 +1,50 @@
+{
+    "net_cash_flow_from_financing_activities_continuing": {
+        "label": "Net Cash Flow From Financing Activities, Continuing",
+        "value": -93353000000.0,
+        "unit": "USD",
+        "order": 800
+    },
+    "net_cash_flow": {
+        "label": "Net Cash Flow",
+        "value": -3860000000.0,
+        "unit": "USD",
+        "order": 1100
+    },
+    "net_cash_flow_from_operating_activities_continuing": {
+        "label": "Net Cash Flow From Operating Activities, Continuing",
+        "value": 104038000000.0,
+        "unit": "USD",
+        "order": 200
+    },
+    "net_cash_flow_from_investing_activities_continuing": {
+        "label": "Net Cash Flow From Investing Activities, Continuing",
+        "value": -14545000000.0,
+        "unit": "USD",
+        "order": 500
+    },
+    "net_cash_flow_continuing": {
+        "label": "Net Cash Flow, Continuing",
+        "value": -3860000000.0,
+        "unit": "USD",
+        "order": 1200
+    },
+    "net_cash_flow_from_investing_activities": {
+        "label": "Net Cash Flow From Investing Activities",
+        "value": -14545000000.0,
+        "unit": "USD",
+        "order": 400
+    },
+    "net_cash_flow_from_financing_activities": {
+        "label": "Net Cash Flow From Financing Activities",
+        "value": -93353000000.0,
+        "unit": "USD",
+        "order": 700
+    },
+    "net_cash_flow_from_operating_activities": {
+        "label": "Net Cash Flow From Operating Activities",
+        "value": 104038000000.0,
+        "unit": "USD",
+        "order": 100
+    }
+}

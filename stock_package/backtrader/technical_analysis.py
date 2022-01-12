@@ -125,52 +125,6 @@ def get_RSI(prices):
 	return RSI
 
 
-def backtest_MACD(dates, prices, tech_indicators):
-	MACD = tech_indicators['MACD']
-	signal = tech_indicators['signal']
-	histogram = tech_indicators['histogram']
-	RSI = tech_indicators['RSI']
-	EMAs = tech_indicators['EMA']
-
-	MACD_signals = []
-	prev_MACD, prev_signal = MACD[0], signal[0]
-	prev_hist = histogram[0]
-
-	i = 1
-	bought = False
-	for date, price, MACD_val, signal_val, hist_val, RSI_val in zip(dates[1:], prices[1:], MACD[1:], signal[1:], histogram[1:], RSI[1:]):
-		action = None
-		rate_of_change = (MACD_val - prev_MACD)
-
-		# buy signal
-		if i-2 >= 0 and histogram[i-2] < 0 and histogram[i-1] > 0 and histogram[i] > histogram[i-1]:
-			rate_of_change = (histogram[i] - histogram[i-1]) / histogram[i-1]
-			if RSI_val < 70: #histogram[i] > 0.2 and rate_of_change > 0.5:
-			# if MACD_val < 0: #and rate_of_change >= 5:
-				if not bought: #and rate_of_change >= 0.2:
-					action = (date, price, "buy")
-					bought = True
-		# sell signal
-		elif i-1 >= 0 and hist_val < 0:
-			# "ignore sell signal if MACD stock indicator is above zero"
-			if RSI_val > 30: #MACD_val > 0:
-				if bought:
-					action = (date, price, "sell")
-					bought = False
-
-		if action is not None:
-			MACD_signals.append(action)
-
-		prev_MACD = MACD_val
-		prev_signal = signal_val
-		prev_hist = hist_val
-
-		i += 1
-
-	# success_rate = 0 if total_trades == 0 else (successful_trades / total_trades) * 100
-	return MACD_signals
-
-
 def backtest_EMA(dates, prices, tech_indicators):
 	EMA = tech_indicators['EMA']
 
