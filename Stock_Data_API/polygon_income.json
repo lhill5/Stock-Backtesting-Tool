@@ -1,0 +1,128 @@
+{
+    "income_loss_from_continuing_operations_after_tax": {
+        "label": "Income/Loss From Continuing Operations After Tax",
+        "value": 94680000000.0,
+        "unit": "USD",
+        "order": 1400
+    },
+    "costs_and_expenses": {
+        "label": "Costs And Expenses",
+        "value": 256610000000.0,
+        "unit": "USD",
+        "order": 600
+    },
+    "net_income_loss_attributable_to_parent": {
+        "label": "Net Income/Loss Attributable To Parent",
+        "value": 94680000000.0,
+        "unit": "USD",
+        "order": 3500
+    },
+    "income_tax_expense_benefit": {
+        "label": "Income Tax Expense/Benefit",
+        "value": 14527000000.0,
+        "unit": "USD",
+        "order": 2200
+    },
+    "cost_of_revenue": {
+        "label": "Cost Of Revenue",
+        "value": 212981000000.0,
+        "unit": "USD",
+        "order": 300
+    },
+    "net_income_loss_attributable_to_noncontrolling_interest": {
+        "label": "Net Income/Loss Attributable To Noncontrolling Interest",
+        "value": 0,
+        "unit": "USD",
+        "order": 3300
+    },
+    "operating_income_loss": {
+        "label": "Operating Income/Loss",
+        "value": 108949000000.0,
+        "unit": "USD",
+        "order": 1100
+    },
+    "net_income_loss": {
+        "label": "Net Income/Loss",
+        "value": 94680000000.0,
+        "unit": "USD",
+        "order": 3200
+    },
+    "net_income_loss_available_to_common_stockholders_basic": {
+        "label": "Net Income/Loss Available To Common Stockholders, Basic",
+        "value": 94680000000.0,
+        "unit": "USD",
+        "order": 3700
+    },
+    "gross_profit": {
+        "label": "Gross Profit",
+        "value": 152836000000.0,
+        "unit": "USD",
+        "order": 800
+    },
+    "operating_expenses": {
+        "label": "Operating Expenses",
+        "value": 43887000000.0,
+        "unit": "USD",
+        "order": 1000
+    },
+    "participating_securities_distributed_and_undistributed_earnings_loss_basic": {
+        "label": "Participating Securities, Distributed And Undistributed Earnings/Loss, Basic",
+        "value": 0,
+        "unit": "USD",
+        "order": 3800
+    },
+    "income_tax_expense_benefit_deferred": {
+        "label": "Income Tax Expense/Benefit, Deferred",
+        "value": -4774000000.0,
+        "unit": "USD",
+        "order": 2400
+    },
+    "benefits_costs_expenses": {
+        "label": "Benefits Costs and Expenses",
+        "value": 256610000000.0,
+        "unit": "USD",
+        "order": 200
+    },
+    "diluted_earnings_per_share": {
+        "label": "Diluted Earnings Per Share",
+        "value": 5.61,
+        "unit": "USD / shares",
+        "order": 4300
+    },
+    "income_loss_from_continuing_operations_before_tax": {
+        "label": "Income/Loss From Continuing Operations Before Tax",
+        "value": 109207000000.0,
+        "unit": "USD",
+        "order": 1500
+    },
+    "basic_earnings_per_share": {
+        "label": "Basic Earnings Per Share",
+        "value": 5.67,
+        "unit": "USD / shares",
+        "order": 4200
+    },
+    "interest_expense_operating": {
+        "label": "Interest Expense, Operating",
+        "value": 2645000000.0,
+        "unit": "USD",
+        "order": 2700
+    },
+    "preferred_stock_dividends_and_other_adjustments": {
+        "label": "Preferred Stock Dividends And Other Adjustments",
+        "value": 0,
+        "unit": "USD",
+        "order": 3900
+    },
+    "nonoperating_income_loss": {
+        "label": "Nonoperating Income/Loss",
+        "value": 258000000.0,
+        "unit": "USD",
+        "order": 900
+    },
+    "revenues": {
+        "label": "Revenues",
+        "value": 365817000000.0,
+        "unit": "USD",
+        "order": 100
+    }
+}
