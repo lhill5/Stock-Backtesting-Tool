@@ -7,6 +7,7 @@ import datetime
 import pdb
 from urllib.error import HTTPError
 import fundamentalData_API as fundamental_API
+import random
 
 
 class SQL_DB:
@@ -29,6 +30,7 @@ class SQL_DB:
         self.update = update
         self.update_list = update_list
         self.debug = False
+        self.debug2 = False
         self.daily_API_limit_reached = False
 
         if not SQL_DB.stock_data_connection:
@@ -186,32 +188,40 @@ class SQL_DB:
     def sql_update_tables(self, update_prices=True, update_fundamental=True):
         # self.update_stocks = self.update_stocks[:20]
         # ______________________________________________________________________________________________________________
-        stock_data_counter = 0
-        fundamental_data_counter = 0
 
         stock_data_queue = []
         fundamental_data_queue = []
 
-        start_time = time.time()
+        prev_stock_API_time = time.time()
+        prev_fund_API_time = time.time()
+
+        stock_API_limit_reached = False
+        fund_API_limit_reached = False
+
         update_list_len = len(self.update_stocks)
-        for i, ticker in enumerate(self.update_stocks):
-            norm_ticker = normalize_ticker_name(ticker)
-            # if ticker == 'AADI':
-            #     breakpoint()
+        si = fi = 0 # stock index and fundamental index for keeping track of current ticker
+
+        while (update_prices and si < update_list_len) or (update_fundamental and fi < update_list_len):
 
             # get stock prices data
-            if update_prices:
+            if update_prices and si < update_list_len:
+                ticker = self.update_stocks[si]
+                norm_ticker = normalize_ticker_name(ticker)
+
                 # check to see if data already exists before API call and SQL table edit
                 prices_data = self.query_table(norm_ticker)
-                if prices_data:
-                    pass
+                if prices_data and prices_data[-1][0] == self.latest_trading_date():
+                    si += 1
+                    continue
 
-                if stock_data_counter % 300 == 0 and stock_data_counter != 0:
-                    if time.time() - start_time >= 60:
-                        start_time = time.time()
-                        stock_data_queue.append({norm_ticker: self.get_stock_data(ticker)})
-                        stock_data_counter += 1
-                    # if still waiting, update SQL table in the meantime
+                # check if API limit reached
+                if si % 300 == 0 and si != 0:
+                    stock_API_limit_reached = True
+
+                if stock_API_limit_reached:
+                    if (time.time() - prev_stock_API_time >= 60):
+                        prev_stock_API_time = time.time()
+                        stock_API_limit_reached = False
                     else:
                         if stock_data_queue:
                             queue_data = stock_data_queue.pop()
@@ -220,41 +230,45 @@ class SQL_DB:
                                 self.update_stock_prices_table(norm_ticker, data)
                             else:
                                 print(f'{norm_ticker} no data')
-                else:
+
+                if not stock_API_limit_reached:
                     stock_data_queue.append({norm_ticker: self.get_stock_data(ticker)})
-                    stock_data_counter += 1
+                    si += 1
 
             # get fundamental data
-            if update_fundamental:
-                # api requires ticker be capitalized
+            if update_fundamental and fi < update_list_len:
+                ticker = self.update_stocks[fi]
+                norm_ticker = normalize_ticker_name(ticker).upper()
+
+                # if SQL table already has data for this ticker, then no need to use API call
                 fundamental_data = self.query_table(norm_ticker, fundamental_db=True)
                 if fundamental_data:
-                    pass
+                    fi += 1
+                    continue
 
-                norm_ticker = norm_ticker.upper()
-                if fundamental_data_counter % 5 == 0 and fundamental_data_counter != 0:
-                    # check if 1 minute (API limit) has passed before another API call, if last element then call update_fundamental_table
-                    if time.time() - start_time >= 60:
-                        start_time = time.time()
-                        fundamental_data_queue.append({norm_ticker: self.parse_fundamental_stock_data(ticker)})
-                        fundamental_data_counter += 1
-                    # if still waiting, update SQL table in the meantime
+                # check to see if API limit has been reached
+                if fi % 5 == 0 and fi != 0:
+                    if not fund_API_limit_reached:
+                        print(f'{fi}: {ticker}')
+                        print('API limit reached')
+                    fund_API_limit_reached = True
+
+                if fund_API_limit_reached:
+                    if (time.time() - prev_fund_API_time >= 60):
+                        prev_fund_API_time = time.time()
+                        fund_API_limit_reached = False
                     else:
                         if fundamental_data_queue:
-                            data = None
-                            try:
-                                queue_data = fundamental_data_queue.pop()
-                                norm_ticker, data = list(queue_data.items())[0]
-                            except:
-                                breakpoint()
-
+                            queue_data = fundamental_data_queue.pop()
+                            norm_ticker, data = list(queue_data.items())[0]
                             if data:
                                 self.update_fundamental_table(norm_ticker, data)
                             else:
                                 print(f'{norm_ticker} no data')
-                else:
+
+                if not fund_API_limit_reached:
                     fundamental_data_queue.append({norm_ticker: self.parse_fundamental_stock_data(ticker)})
-                    fundamental_data_counter += 1
+                    fi += 1
 
         # update remaining stocks in queue if any left
         if update_prices:
@@ -298,15 +312,30 @@ class SQL_DB:
         return (ticker, row_data)
 
 
-    def parse_fundamental_stock_data(self, ticker):
+    def parse_fundamental_stock_data(self, ticker, test_data=False):
         norm_ticker = normalize_ticker_name(ticker)
+
+        time_frame = 'annual'
+        transformed_data = []
+
+        if test_data:
+            for fiscal_year in range(2010, 2021):
+                key = f'{fiscal_year}-{time_frame}'
+                random_data = [key, fiscal_year, time_frame]
+                random_numbers = [random.randint(10**6, 99**7) for i in range(28)]
+                random_numbers[12] = random.randint(1,10)
+                random_numbers[13] = random.randint(1, 10)
+
+                random_data.extend(random_numbers)
+                transformed_data.append(tuple(random_data))
+            return transformed_data
+
+        # if not test_data, get data from API call
         error, fundamental_data = fundamental_API.get_fundamental_data(ticker)
         if fundamental_data is None:
             return
 
         # transform data to list of tuples (for inserting into SQL table)
-
-        transformed_data = []
         for fiscal_year, data in fundamental_data.items():
             income_statement = data['income_statement']
             revenue = check_data(income_statement, 'revenues')

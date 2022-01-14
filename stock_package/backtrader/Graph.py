@@ -68,10 +68,12 @@ class Graph:
         self.ticker = stock.ticker
         self.stock_dict = stock.stock_dict
         self.tech_indicators = stock.tech_indicators
+        self.fundamental_data = stock.fundamental_data
         self.date_to_index = stock.date_to_index
 
         self.moving_averages = self.tech_indicators['EMA'].keys()
         self.df = self.get_stock_df()
+        self.fund_df = self.get_fundamental_df()
         self.stocks_df = self.get_stocks_df()
 
         self.len = self.df.shape[0]
@@ -89,6 +91,7 @@ class Graph:
         self.stock_metrics_df = self.get_stock_metrics_df()
 
         self.stock_source = ColumnDataSource(ColumnDataSource.from_df(self.df))
+        self.fundamental_source = ColumnDataSource(ColumnDataSource.from_df(self.fund_df))
         self.stocks_source = ColumnDataSource(ColumnDataSource.from_df(self.stocks_df))
         self.minmax_source = ColumnDataSource(ColumnDataSource.from_df(self.minmax_df))
         self.buysell_MACD_source = ColumnDataSource(ColumnDataSource.from_df(self.buysell_MACD_df))
@@ -206,6 +209,11 @@ class Graph:
         self.plot_ticker_list_table()
         self.plot_stock_metrics_table()
 
+        # fundamental data tables
+        self.plot_income_statement_table()
+        self.plot_balance_sheet_table()
+        self.plot_cash_flow_table()
+
         # adds interactive widgets (date slicer, stock picker, etc.)
         self.add_interactive_tools()
 
@@ -222,8 +230,11 @@ class Graph:
         tab2 = Panel(child=column(self.BYFCF_spinner, self.GR_spinner, self.all_stocks_table, self.minmax_fig), title='tabular view')
         tab3 = Panel(child=row(self.stock_prices_table), title='stock prices')
         tab4 = Panel(child=row(self.BYFCF_spinner, self.GR_spinner), title='financial data')
+        tab5 = Panel(child=row(self.income_statement_table), title='income statement')
+        tab6 = Panel(child=row(self.balance_sheet_table), title='balance sheet')
+        tab7 = Panel(child=row(self.cash_flow_table), title='cash flow statement')
 
-        layout = Tabs(tabs=[tab0, tab1, tab2, tab3, tab4])
+        layout = Tabs(tabs=[tab0, tab1, tab2, tab3, tab4, tab5, tab6, tab7])
         curdoc().add_root(layout)
 
 
@@ -430,7 +441,7 @@ class Graph:
             TableColumn(field='volume', title='Volume'),
             TableColumn(field='percent_change_str', title='% Change', formatter=self.get_html_formatter())
         ]
-        self.stock_prices_table = DataTable(source=self.stock_source, columns=columns, height=800, css_classes=["table_rows"], index_position=None, margin=(5,5,5,25))
+        self.stock_prices_table = DataTable(source=self.stock_source, columns=columns, height=800, autosize_mode='fit_viewport', css_classes=["table_rows"], index_position=None, margin=(5,5,5,25))
 
 
     def plot_trading_strategy_table(self):
@@ -453,7 +464,7 @@ class Graph:
             TableColumn(field='stocks', title='Stocks'),
             TableColumn(field='intrinsic_value', title='Intrinsic Value')
         ]
-        self.all_stocks_table = DataTable(source=self.ticker_list_source, columns=columns, height=800, index_position=None, margin=(5, 5, 5, 25))
+        self.all_stocks_table = DataTable(source=self.ticker_list_source, columns=columns, height=800, autosize_mode='fit_viewport', index_position=None, margin=(5, 5, 5, 25))
 
 
     def plot_stock_metrics_table(self):
@@ -462,7 +473,73 @@ class Graph:
             TableColumn(field='intrinsic_value', title='Intrinsic Value'),
             TableColumn(field='intrinsic_value_per_share', title='Intrinsic Value Per Share')
         ]
-        self.stock_metrics_table = DataTable(source=self.stock_metrics_source, columns=columns, height=800, index_position=None, margin=(5, 5, 5, 25), editable=True)
+        self.stock_metrics_table = DataTable(source=self.stock_metrics_source, columns=columns, height=800, autosize_mode='fit_viewport', index_position=None, margin=(5, 5, 5, 25), editable=True)
+
+
+    def plot_income_statement_table(self):
+        #  available columns
+        #  __________________________________________________________________________________________
+        #  key, fiscal_year, time_frame, revenue, COGS, gross_income, SGA, EBIT,
+        #  gross_interest_expense, pretax_income, income_tax, net_income, shareholder_net_income,
+        #  consolidated_net_income, operating_income, EPS_basic, EPS_diluted
+
+        columns = [
+            TableColumn(field='fiscal_year', title='fiscal year'),
+            TableColumn(field='revenue', title='revenue'),
+            TableColumn(field='COGS', title='COGS'),
+            TableColumn(field='gross_income', title='gross income'),
+            TableColumn(field='SGA', title='SGA'),
+            TableColumn(field='EBIT', title='EBIT'),
+            TableColumn(field='gross_interest_expense', title='gross interest expense'),
+            TableColumn(field='pretax_income', title='pretax income'),
+            TableColumn(field='income_tax', title='income tax'),
+            TableColumn(field='net_income', title='net income'),
+            TableColumn(field='shareholder_net_income', title='shareholder net income'),
+            TableColumn(field='consolidated_net_income', title='consolidated net income'),
+            TableColumn(field='operating_income', title='operating income'),
+            TableColumn(field='EPS_basic', title='EPS basic'),
+            TableColumn(field='EPS_diluted', title='EPS diluted')
+        ]
+        self.income_statement_table = DataTable(source=self.fundamental_source, columns=columns, height=800, autosize_mode='fit_viewport', css_classes=["table_rows"], index_position=None, margin=(5,5,5,25))
+
+
+    def plot_balance_sheet_table(self):
+        #  available columns
+        #  __________________________________________________________________________________________
+        #  key, fiscal_year, time_frame, total_current_assets,
+        #  total_noncurrent_assets, fixed_assets, total_assets, total_current_liabilities,
+        #  total_noncurrent_liabilities, total_liabilities, common_equity, total_shareholders_equity,
+        #  liabilities_and_shareholder_equity
+
+        columns = [
+            TableColumn(field='fiscal_year', title='fiscal year'),
+            TableColumn(field='total_current_assets', title='total current assets'),
+            TableColumn(field='fixed_assets', title='fixed assets'),
+            TableColumn(field='total_assets', title='total assets'),
+            TableColumn(field='total_current_liabilities', title='total current liabilities'),
+            TableColumn(field='total_noncurrent_liabilities', title='total noncurrent liabilities'),
+            TableColumn(field='total_liabilities', title='total liabilities'),
+            TableColumn(field='common_equity', title='common equity'),
+            TableColumn(field='total_shareholders_equity', title='total shareholders equity'),
+            TableColumn(field='liabilities_and_shareholder_equity', title='liabilities and shareholder equity')
+        ]
+        self.balance_sheet_table = DataTable(source=self.fundamental_source, columns=columns, height=800, autosize_mode='fit_viewport', css_classes=["table_rows"], index_position=None, margin=(5,5,5,25))
+
+
+    def plot_cash_flow_table(self):
+        #  available columns
+        #  __________________________________________________________________________________________
+        #  key, fiscal_year, time_frame, operating_net_cash_flow, investing_net_cash_flow,
+        #  financing_net_cash_flow, total_net_cash_flow
+
+        columns = [
+            TableColumn(field='fiscal_year', title='fiscal year'),
+            TableColumn(field='operating_net_cash_flow', title='operating net cash flow'),
+            TableColumn(field='investing_net_cash_flow', title='investing net cash flow'),
+            TableColumn(field='financing_net_cash_flow', title='financing net cash flow'),
+            TableColumn(field='total_net_cash_flow', title='total net cash flow')
+        ]
+        self.cash_flow_table = DataTable(source=self.fundamental_source, columns=columns, height=800, autosize_mode='fit_viewport', css_classes=["table_rows"], index_position=None, margin=(5, 5, 5, 25))
 
 
     def plot_stock_screener_table(self):
@@ -946,6 +1023,26 @@ class Graph:
         return df
 
 
+    def get_fundamental_df(self):
+        # fundamental data
+        columns = ['key', 'fiscal_year', 'time_frame', 'revenue', 'COGS', 'gross_income', 'SGA', 'EBIT', 'gross_interest_expense', 'pretax_income', 'income_tax', 'net_income', 'shareholder_net_income', 'consolidated_net_income', 'operating_income', 'EPS_basic', 'EPS_diluted', 'total_current_assets', 'total_noncurrent_assets', 'fixed_assets', 'total_assets', 'total_current_liabilities', 'total_noncurrent_liabilities', 'total_liabilities', 'common_equity', 'total_shareholders_equity', 'liabilities_and_shareholder_equity', 'operating_net_cash_flow', 'investing_net_cash_flow', 'financing_net_cash_flow', 'total_net_cash_flow']
+        fund_data = np.array(self.fundamental_data).T.tolist()
+        i = 3
+        for col in fund_data[3:]:
+            if 'EPS' not in columns[i]:
+                fund_data[i] = [int(v/10**6) for v in fund_data[i]]
+            i += 1
+
+        fund_dict = {key: vals for i, (key, vals) in enumerate(zip(columns, fund_data))}
+        df = pd.DataFrame.from_dict(fund_dict)
+        df.columns = columns
+
+        len = df.shape[0]
+        seqs = np.arange(len)
+        df["seq"] = pd.Series(seqs)
+        return df
+
+
     def get_stocks_df(self):
         stock_data = {key: vals for key, vals in self.stock_dict.items()}
         minmax_stocks_df = pd.DataFrame(columns=['ticker', 'minmax total transactions', 'minmax buy/sell profit', 'minmax total profit', 'minmax buy/sell gain', 'minmax buy/sell CAGR', 'minmax CAGR'], index=list(range(0, len(self.stocks))))
@@ -1046,6 +1143,18 @@ class Graph:
         <%= value %></div>
         """
         return HTMLTemplateFormatter(template=template)
+
+
+ #    def get_html_formatter(self):
+ #
+ #        template = """
+ #        <div style="color:<%=percent_change_color%>";>
+ #        <%= num.toLocaleString('en', {useGrouping:true})
+ # %></div>
+ #        """
+ #        return HTMLTemplateFormatter(template=template)
+
+    # console.log(num.toLocaleString("en-US")); // 1, 234, 567.89
 
 
 if __name__ == '__main__':

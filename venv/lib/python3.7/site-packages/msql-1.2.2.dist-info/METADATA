@@ -1,0 +1,20 @@
+Metadata-Version: 2.1
+Name: msql
+Version: 1.2.2
+Summary: Simple DSL with automatic migrations.
+Home-page: UNKNOWN
+Author: CERT Polska
+Author-email: info@cert.pl
+License: GPLv3
+Platform: UNKNOWN
+Classifier: Programming Language :: Python
+Requires-Dist: mypy
+Requires-Dist: mypy-extensions
+Requires-Dist: typed-ast
+Requires-Dist: typing-extensions
+Provides-Extra: postgresql
+Requires-Dist: psycopg2-binary ; extra == 'postgresql'
+
+UNKNOWN
+
+

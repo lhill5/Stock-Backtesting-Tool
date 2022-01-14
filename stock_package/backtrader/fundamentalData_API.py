@@ -20,12 +20,8 @@ def get_fundamental_data(ticker, fiscal_year=None):
     error = None
     if r['status'] == 'ERROR':
         error = r['error']
-        if 'exceeded the maximum requests per minute' in error:
-            print('exceeded max requests/min - waiting ...')
-            time.sleep(60)
-            r = requests.get(date_filter_annual_url).json()
-            if r['status'] == 'ERROR':
-                return (None, None)
+        print(error)
+        return (None, None)
 
     results = None
     try:

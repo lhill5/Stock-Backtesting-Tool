@@ -20,6 +20,7 @@ class Stock:
 
         self.dates = []
         self.prices = defaultdict(list)
+        self.fundamental = defaultdict(list)
         self.tech_indicators = defaultdict(list)
         self.moving_averages = [9,50,150,200]
 
@@ -64,25 +65,7 @@ class Stock:
         self.start_date = self.valid_start_date_offset if start_date is None else max(start_date, self.valid_start_date)
         self.end_date = self.valid_end_date if end_date is None else min(end_date, self.valid_end_date)
 
-        # queries SQL database for this ticker's stock prices between start date / end date
-        # start_time = time.time()
         error = self.query_stock_prices()
-        # end_time = time.time()
-        # print(f'sql query program finished in {round((end_time - start_time)*1000, 1)} ms')
-
-
-        # start_time = time.time()
-        # for i in range(10000):
-        #     cols = "date, open, high, low, close, adj_close, volume"
-        #     query = f"SELECT {cols} FROM {self.ticker_letters}_table WHERE date >= '{self.start_date}' and date <= '{self.end_date}'"
-        #
-        #     df = cx.read_sql(f"mysql://root:mssqlserver44@localhost:3306/stock_data", query)
-        #     df = df.values.tolist()
-        #     # error = self.query_stock_prices()
-        #
-        # end_time = time.time()
-        # print(f'sql query program finished in {round(end_time - start_time, 1)} seconds')
-
         if error == -1:
             self.error = True
             return
@@ -235,6 +218,9 @@ class Stock:
 
         self.tech_indicators['EMA'] = EMAs
         self.tech_indicators['SMA'] = SMAs
+
+        self.fundamental_data = self.SQL.query_table(self.ticker, fundamental_db=True)
+
         return 1
 
 

@@ -21,21 +21,15 @@ import random
 stocks = {}
 stock_count = 0
 
-start_time = time.time()
 stock_data_API = StockData_API()
-print(f'{round(time.time() - start_time,1)}s')
-
-database = SQL_DB(stock_data_API, update=True)
-exit()
-
-print(f'{round(time.time() - start_time,1)}s')
-
-start_date, end_date = datetime.date(2020, 1, 1), datetime.date(2021, 1, 1)
+database = SQL_DB(stock_data_API, update=False)
 
 start_time = time.time()
-stock_list = ['aapl', 'tsla', 'msft', 'voo', 'vti', 'gme', 'vbr', 'ijr', 'vo', 'amc']
+start_date, end_date = datetime.date(2020, 1, 1), datetime.date(2021, 1, 1)
+# stock_list = ['aapl', 'tsla', 'msft', 'voo', 'vti', 'gme', 'vbr', 'ijr', 'vo', 'amc']
+stock_list = database.stocks
 # for i in range(100):
-for ticker in stock_list:
+for ticker in ['AAPL']:
 # for ticker in database.stocks:
 #     ticker = random.choice(database.stocks)
     # ticker = 'aapl'
@@ -47,12 +41,8 @@ for ticker in stock_list:
         print('error')
         continue
 
-    # if len(stock.dates) == 0:
-    #     continue
-
     df, df_trades = strat.buysell_minmax(stock)
     eval = strat.evaluate_strategy(stock, df)
-    # print()
 
     # if ticker == 'MGM':
     # trading_strategies.plot_results(df, df_trades)

@@ -1,0 +1,159 @@
+
+
+
+
+<!DOCTYPE html>
+<html lang="en">
+  
+  <head>
+    
+      <meta charset="utf-8">
+      <title>Bokeh Plot</title>
+      
+      
+        
+          
+        
+        
+          
+        <script type="text/javascript" src="https://cdn.bokeh.org/bokeh/release/bokeh-2.3.2.min.js" integrity="sha384-XypntL49z55iwGVUW4qsEu83zKL3XEcz0MjuGOQ9SlaaQ68X/g+k1FcioZi7oQAc" crossorigin="anonymous"></script>
+        <script type="text/javascript">
+            Bokeh.set_log_level("info");
+        </script>
+        <script type="text/javascript">
+            (function(root, factory) {
+                    factory(root["Bokeh"]);
+                })(this, function(Bokeh) {
+                  var define;
+                  return (function outer(modules, entry) {
+                  if (Bokeh != null) {
+                    return Bokeh.register_plugin(modules, entry);
+                  } else {
+                    throw new Error("Cannot find Bokeh. You have to load it prior to loading plugins.");
+                  }
+                })
+                ({
+                  "custom/main": function(require, module, exports) {
+                    var models = {
+                      "DrawTool": require("custom/draw_tool").DrawTool
+                    };
+                    require("base").register_models(models);
+                    module.exports = models;
+                  },
+                  "custom/draw_tool": function(require, module, exports) {
+                "use strict";
+                Object.defineProperty(exports, "__esModule", { value: true });
+                exports.DrawTool = exports.DrawToolView = void 0;
+                const gesture_tool_1 = require("models/tools/gestures/gesture_tool");
+                const column_data_source_1 = require("models/sources/column_data_source");
+                class DrawToolView extends gesture_tool_1.GestureToolView {
+                    //this is executed when the pan/drag event starts
+                    _pan_start(_ev) {
+                        this.model.source.data = { x: [], y: [] };
+                    }
+                    //this is executed on subsequent mouse/touch moves
+                    _pan(ev) {
+                        const { frame } = this.plot_view;
+                        const { sx, sy } = ev;
+                        if (!frame.bbox.contains(sx, sy))
+                            return;
+                        const x = frame.x_scale.invert(sx);
+                        const y = frame.y_scale.invert(sy);
+                        const { source } = this.model;
+                        source.get_array("x").push(x);
+                        source.get_array("y").push(y);
+                        source.change.emit();
+                    }
+                    // this is executed then the pan/drag ends
+                    _pan_end(_ev) { }
+                }
+                exports.DrawToolView = DrawToolView;
+                DrawToolView.__name__ = "DrawToolView";
+                class DrawTool extends gesture_tool_1.GestureTool {
+                    constructor(attrs) {
+                        super(attrs);
+                        this.tool_name = "Drag Span";
+                        this.icon = "bk-tool-icon-lasso-select";
+                        this.event_type = "pan";
+                        this.default_order = 12;
+                    }
+                    static init_DrawTool() {
+                        this.prototype.default_view = DrawToolView;
+                        this.define(({ Ref }) => ({
+                            source: [Ref(column_data_source_1.ColumnDataSource)],
+                        }));
+                    }
+                }
+                exports.DrawTool = DrawTool;
+                DrawTool.__name__ = "DrawTool";
+                DrawTool.init_DrawTool();
+                //# sourceMappingURL=custom_tool.py:DrawTool.js.map
+                }
+                }, "custom/main");
+                ;
+                });
+
+        </script>
+        
+      
+      
+    
+  </head>
+  
+  
+  <body>
+    
+      
+        
+          
+          
+            
+              <div class="bk-root" id="015a87f5-5487-494a-976f-b929ed35ec8a" data-root-id="1004"></div>
+            
+          
+        
+      
+      
+        <script type="application/json" id="1129">
+          {"99fe58ba-25be-4dda-82df-35f1e3399f72":{"defs":[],"roots":{"references":[{"attributes":{},"id":"1031","type":"BasicTickFormatter"},{"attributes":{},"id":"1034","type":"BasicTickFormatter"},{"attributes":{},"id":"1014","type":"BasicTicker"},{"attributes":{},"id":"1032","type":"AllLabels"},{"attributes":{},"id":"1037","type":"UnionRenderers"},{"attributes":{"line_alpha":0.1,"line_color":"#1f77b4","x":{"field":"x"},"y":{"field":"y"}},"id":"1026","type":"Line"},{"attributes":{},"id":"1018","type":"BasicTicker"},{"attributes":{},"id":"1011","type":"LinearScale"},{"attributes":{"data_source":{"id":"1002"},"glyph":{"id":"1025"},"hover_glyph":null,"muted_glyph":null,"nonselection_glyph":{"id":"1026"},"view":{"id":"1028"}},"id":"1027","type":"GlyphRenderer"},{"attributes":{"source":{"id":"1002"}},"id":"1003","type":"DrawTool"},{"attributes":{"axis":{"id":"1013"},"ticker":null},"id":"1016","type":"Grid"},{"attributes":{"below":[{"id":"1013"}],"center":[{"id":"1016"},{"id":"1020"}],"left":[{"id":"1017"}],"renderers":[{"id":"1027"}],"title":{"id":"1023"},"toolbar":{"id":"1021"},"x_range":{"id":"1005"},"x_scale":{"id":"1009"},"y_range":{"id":"1007"},"y_scale":{"id":"1011"}},"id":"1004","subtype":"Figure","type":"Plot"},{"attributes":{"end":10},"id":"1005","type":"Range1d"},{"attributes":{"end":10},"id":"1007","type":"Range1d"},{"attributes":{"axis":{"id":"1017"},"dimension":1,"ticker":null},"id":"1020","type":"Grid"},{"attributes":{"text":"Drag to draw on the plot"},"id":"1023","type":"Title"},{"attributes":{"formatter":{"id":"1034"},"major_label_policy":{"id":"1035"},"ticker":{"id":"1018"}},"id":"1017","type":"LinearAxis"},{"attributes":{"data":{"x":[],"y":[]},"selected":{"id":"1038"},"selection_policy":{"id":"1037"}},"id":"1002","type":"ColumnDataSource"},{"attributes":{"active_multi":null,"tools":[{"id":"1003"}]},"id":"1021","type":"Toolbar"},{"attributes":{},"id":"1035","type":"AllLabels"},{"attributes":{"formatter":{"id":"1031"},"major_label_policy":{"id":"1032"},"ticker":{"id":"1014"}},"id":"1013","type":"LinearAxis"},{"attributes":{"line_color":"#1f77b4","x":{"field":"x"},"y":{"field":"y"}},"id":"1025","type":"Line"},{"attributes":{},"id":"1009","type":"LinearScale"},{"attributes":{"source":{"id":"1002"}},"id":"1028","type":"CDSView"},{"attributes":{},"id":"1038","type":"Selection"}],"root_ids":["1004"]},"title":"Bokeh Application","version":"2.3.2"}}
+        </script>
+        <script type="text/javascript">
+          (function() {
+            var fn = function() {
+              Bokeh.safely(function() {
+                (function(root) {
+                  function embed_document(root) {
+                    
+                  var docs_json = document.getElementById('1129').textContent;
+                  var render_items = [{"docid":"99fe58ba-25be-4dda-82df-35f1e3399f72","root_ids":["1004"],"roots":{"1004":"015a87f5-5487-494a-976f-b929ed35ec8a"}}];
+                  root.Bokeh.embed.embed_items(docs_json, render_items);
+                
+                  }
+                  if (root.Bokeh !== undefined) {
+                    embed_document(root);
+                  } else {
+                    var attempts = 0;
+                    var timer = setInterval(function(root) {
+                      if (root.Bokeh !== undefined) {
+                        clearInterval(timer);
+                        embed_document(root);
+                      } else {
+                        attempts++;
+                        if (attempts > 100) {
+                          clearInterval(timer);
+                          console.log("Bokeh: ERROR: Unable to run BokehJS code because BokehJS library is missing");
+                        }
+                      }
+                    }, 10, root)
+                  }
+                })(window);
+              });
+            };
+            if (document.readyState != "loading") fn();
+            else document.addEventListener("DOMContentLoaded", fn);
+          })();
+        </script>
+    
+  </body>
+  
+</html>
