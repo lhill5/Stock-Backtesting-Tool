@@ -11,7 +11,7 @@ import trading_strategies as strat
 from random_functions import print_df
 
 from bokeh.plotting import figure, show, output_file, curdoc, reset_output
-from bokeh.models import tools, HoverTool, CrosshairTool, ColumnDataSource, CustomJS, Button, Rect, Span, CheckboxButtonGroup, DatePicker, MultiChoice, Range1d, LinearAxis, Label, LabelSet, Title, TableColumn, DataTable, HTMLTemplateFormatter, Panel, Tabs, Column, Slider, Spinner
+from bokeh.models import tools, HoverTool, CrosshairTool, ColumnDataSource, CustomJS, Button, Rect, Span, CheckboxButtonGroup, DatePicker, MultiChoice, Range1d, LinearAxis, Label, LabelSet, Title, TableColumn, DataTable, HTMLTemplateFormatter, Panel, Tabs, Column, Slider, Spinner, Div
 from bokeh.events import ButtonClick, MouseMove, MouseEnter, MouseLeave, MouseWheel, PanStart, PanEnd, Pan
 from bokeh.layouts import row, column, gridplot
 from bokeh.palettes import RdYlBu3
@@ -30,8 +30,8 @@ class Graph:
         self.EMA_difference_fig = None
         self.MACD_fig = None
         self.RSI_fig = None
-        self.minmax_fig = None
-        self.buysell_MACD_fig = None
+        self.buysell_ind_fig = None
+        self.buysell_strat_fig = None
 
         # intrinsic value metrics
         # _______________________
@@ -50,6 +50,8 @@ class Graph:
 
         self.intrinsic_value = 0
         self.intrinsic_value_per_share = 0
+
+        # self.title = Div(text="<h1 style='color:blue;'>testing</h1>", margin=(5, 5, 5, 25))
 
         self.init_stock(stock)
         self.calculate_intrinsic_value()
@@ -73,7 +75,7 @@ class Graph:
 
         self.moving_averages = self.tech_indicators['EMA'].keys()
         self.df = self.get_stock_df()
-        self.fund_df = self.get_fundamental_df()
+        # self.fund_df = self.get_fundamental_df()
         self.stocks_df = self.get_stocks_df()
 
         self.len = self.df.shape[0]
@@ -81,20 +83,15 @@ class Graph:
         self.start_date, self.end_date = convert_str_to_date(self.stock_dict['date'][0]), convert_str_to_date(self.stock_dict['date'][-1])
         self.y_limits = self.get_starting_y_limits()
 
-        _, self.minmax_df = strat.buysell_minmax(stock)
-        self.buysell_MACD_df = strat.buysell_MACD1(stock.dates, stock.prices['high'], stock.tech_indicators)
-
-        self.minmax_df['seq'] = self.df['seq']
-        self.buysell_MACD_df['seq'] = self.df['seq']
+        # indicates when to buy or sell depending for various strategies
 
         self.ticker_list_df = self.get_ticker_list_df()
         self.stock_metrics_df = self.get_stock_metrics_df()
 
         self.stock_source = ColumnDataSource(ColumnDataSource.from_df(self.df))
-        self.fundamental_source = ColumnDataSource(ColumnDataSource.from_df(self.fund_df))
+        # self.fundamental_source = ColumnDataSource(ColumnDataSource.from_df(self.fund_df))
         self.stocks_source = ColumnDataSource(ColumnDataSource.from_df(self.stocks_df))
-        self.minmax_source = ColumnDataSource(ColumnDataSource.from_df(self.minmax_df))
-        self.buysell_MACD_source = ColumnDataSource(ColumnDataSource.from_df(self.buysell_MACD_df))
+        self.buysell_indicators_source = strat.buysell_indicators(stock, self.df['seq'])
 
         # self.minmax_rst_source = ColumnDataSource(ColumnDataSource.from_df(self.minmax_rst_df))
         self.ticker_list_source = ColumnDataSource(ColumnDataSource.from_df(self.ticker_list_df))
@@ -117,8 +114,8 @@ class Graph:
 
             self.MACD_fig = figure(x_axis_type='linear', tools="crosshair", toolbar_location=None, width=1400, height=200, x_range=self.candlestick_fig.x_range)
             self.RSI_fig = figure(x_axis_type='linear', tools="crosshair", toolbar_location=None, width=1400, height=200, x_range=self.candlestick_fig.x_range, y_range=(0, 100))
-            self.minmax_fig = figure(x_axis_type='linear', tools="crosshair", toolbar_location=None, width=1400, height=200, x_range=self.candlestick_fig.x_range)
-            self.buysell_MACD_fig = figure(x_axis_type='linear', tools="crosshair", toolbar_location=None, width=1400, height=200, x_range=self.candlestick_fig.x_range)
+            self.buysell_ind_fig = figure(x_axis_type='linear', tools="crosshair", toolbar_location=None, width=1400, height=200, x_range=self.candlestick_fig.x_range)
+            self.buysell_strat_fig = figure(x_axis_type='linear', tools="crosshair", toolbar_location=None, width=1400, height=200, x_range=self.candlestick_fig.x_range)
 
             # breakpoint()
             crosshair = CrosshairTool(
@@ -131,8 +128,8 @@ class Graph:
             self.above_candle_fig.add_tools(crosshair)
             self.MACD_fig.add_tools(crosshair)
             self.RSI_fig.add_tools(crosshair)
-            self.minmax_fig.add_tools(crosshair)
-            self.buysell_MACD_fig.add_tools(crosshair)
+            self.buysell_ind_fig.add_tools(crosshair)
+            self.buysell_strat_fig.add_tools(crosshair)
 
             # initializes event listeners for interactivity tools
             self.init_events()
@@ -145,8 +142,8 @@ class Graph:
             self.candlestick_fig.y_range.start = self.y_limits[1]
             self.MACD_fig.x_range = self.candlestick_fig.x_range
             self.RSI_fig.x_range = self.candlestick_fig.x_range
-            self.minmax_fig.x_range = self.candlestick_fig.x_range
-            self.buysell_MACD_fig.x_range = self.candlestick_fig.x_range
+            self.buysell_ind_fig.x_range = self.candlestick_fig.x_range
+            self.buysell_strat_fig.x_range = self.candlestick_fig.x_range
 
     def plot(self):
         # ____ hover tooltip ____
@@ -200,8 +197,8 @@ class Graph:
         self.plot_candlestick_patterns()
         self.plot_MACD_graph()
         self.plot_RSI_graph()
-        self.plot_minmax_graph()
-        self.plot_buysell_MACD_graph()
+        self.plot_buysell_ind_graph()
+        self.plot_buysell_strat_graph()
 
         # creates data-tables
         self.plot_stock_prices_table()
@@ -210,9 +207,9 @@ class Graph:
         self.plot_stock_metrics_table()
 
         # fundamental data tables
-        self.plot_income_statement_table()
-        self.plot_balance_sheet_table()
-        self.plot_cash_flow_table()
+        # self.plot_income_statement_table()
+        # self.plot_balance_sheet_table()
+        # self.plot_cash_flow_table()
 
         # adds interactive widgets (date slicer, stock picker, etc.)
         self.add_interactive_tools()
@@ -220,21 +217,26 @@ class Graph:
         # autoscale axes when first plotting stock (accounts for padding between candlestick chart and volume bars)
         self.autoscale_candlestick_yaxis(1, 1, 1)
         self.autoscale_MACD_yaxis(1, 1, 1)
-        self.autoscale_minmax_yaxis(1, 1, 1)
-        self.autoscale_buysell_MACD_yaxis(1, 1, 1)
+        self.autoscale_buysell_ind_yaxis(1, 1, 1)
+        self.autoscale_buysell_strat_yaxis(1, 1, 1)
+
+        fundamental_title = Div(text="All values are in USD Millions.", margin=(5,5,5,25))
 
         # breakpoint()
-        tab0 = Panel(child=row(self.stock_prices_table, self.trading_strategy_table), title='stock prices')
+        # tab0 = Panel(child=row(self.stock_prices_table, self.trading_strategy_table), title='stock prices')
 
-        tab1 = Panel(child=column(row(self.start_date_slicer, self.end_date_slicer, self.select_stock), self.candlestick_fig, self.MACD_fig, self.buysell_MACD_fig), title='candlestick chart')
-        tab2 = Panel(child=column(self.BYFCF_spinner, self.GR_spinner, self.all_stocks_table, self.minmax_fig), title='tabular view')
-        tab3 = Panel(child=row(self.stock_prices_table), title='stock prices')
-        tab4 = Panel(child=row(self.BYFCF_spinner, self.GR_spinner), title='financial data')
-        tab5 = Panel(child=row(self.income_statement_table), title='income statement')
-        tab6 = Panel(child=row(self.balance_sheet_table), title='balance sheet')
-        tab7 = Panel(child=row(self.cash_flow_table), title='cash flow statement')
+        tab1 = Panel(child=column(row(self.start_date_slicer, self.end_date_slicer, self.select_stock), self.candlestick_fig, self.buysell_ind_fig, self.buysell_strat_fig), title='candlestick chart')
+        # tab2 = Panel(child=column(self.BYFCF_spinner, self.GR_spinner, self.all_stocks_table), title='tabular view')
+        tab3 = Panel(child=row(self.stock_prices_table, self.trading_strategy_table), title='stock prices')
+        # tab4 = Panel(child=row(self.BYFCF_spinner, self.GR_spinner), title='financial data')
 
-        layout = Tabs(tabs=[tab0, tab1, tab2, tab3, tab4, tab5, tab6, tab7])
+        # tab5 = Panel(child=column(fundamental_title, self.income_statement_table), title='income statement')
+        # tab6 = Panel(child=column(fundamental_title, self.balance_sheet_table), title='balance sheet')
+        # tab7 = Panel(child=column(fundamental_title, self.cash_flow_table), title='cash flow statement')
+
+        # layout = Tabs(tabs=[tab1, tab3, tab5, tab6, tab7])
+        layout = Tabs(tabs=[tab1, tab3])
+
         curdoc().add_root(layout)
 
 
@@ -396,38 +398,34 @@ class Graph:
         self.RSI_fig.xaxis.visible = False
 
 
-    def plot_minmax_graph(self):
-        minmax = self.minmax_fig.line('seq', 'high', source=self.stock_source, line_color='#ffa500')
-        self.minmax_fig.scatter('seq', 'buy', marker="circle", source=self.minmax_source, color="green")
-        self.minmax_fig.scatter('seq', 'sell', marker="circle", source=self.minmax_source, color="red")
+    def plot_buysell_ind_graph(self):
+        buysell_ind = self.buysell_ind_fig.line('seq', 'high', source=self.stock_source, line_color='#ffa500')
+        self.buysell_ind_fig.scatter('seq', 'buy', marker="circle", source=self.buysell_indicators_source['EMA2'], color="green")
+        self.buysell_ind_fig.scatter('seq', 'sell', marker="circle", source=self.buysell_indicators_source['EMA2'], color="red")
 
-        self.tech_indicator_plots.append(self.minmax_fig)
-        self.glyphs.append(minmax)
-
-        # text box to show which date is currently being hovered over on chart
-        # self.date_hover_label = Label(x=83, y=0, x_units='data', y_units='data',
-        #                               text='Date: 2021-02-07', text_color="white", text_align='center', text_font_size='16px', render_mode='css',
-        #                               background_fill_color='#d3d3d3', background_fill_alpha=0.4)
-        # self.minmax_fig.add_layout(self.date_hover_label)
-
-        self.minmax_fig.xaxis.visible = False
-
-
-    def plot_buysell_MACD_graph(self):
-        buysell_MACD = self.buysell_MACD_fig.line('seq', 'high', source=self.stock_source, line_color='#ffa500')
-        self.buysell_MACD_fig.scatter('seq', 'buy', marker="circle", source=self.buysell_MACD_source, color="green")
-        self.buysell_MACD_fig.scatter('seq', 'sell', marker="circle", source=self.buysell_MACD_source, color="red")
-
-        self.tech_indicator_plots.append(self.buysell_MACD_fig)
-        self.glyphs.append(buysell_MACD)
+        self.tech_indicator_plots.append(self.buysell_ind_fig)
+        self.glyphs.append(buysell_ind)
 
         # text box to show which date is currently being hovered over on chart
         # self.date_hover_label = Label(x=83, y=0, x_units='data', y_units='data',
         #                               text='Date: 2021-02-07', text_color="white", text_align='center', text_font_size='16px', render_mode='css',
         #                               background_fill_color='#d3d3d3', background_fill_alpha=0.4)
-        # self.buysell_MACD_fig.add_layout(self.date_hover_label)
+        # self.buysell_ind_fig.add_layout(self.date_hover_label)
+        self.buysell_ind_fig.xaxis.visible = False
 
-        self.buysell_MACD_fig.xaxis.visible = False
+
+    def plot_buysell_strat_graph(self):
+        buysell_strat = self.buysell_strat_fig.line('seq', 'EMA_trend', source=self.stock_source, line_color='#ffff00')
+
+        self.tech_indicator_plots.append(self.buysell_strat_fig)
+        self.glyphs.append(buysell_strat)
+
+        # text box to show which date is currently being hovered over on chart
+        # self.date_hover_label = Label(x=83, y=0, x_units='data', y_units='data',
+        #                               text='Date: 2021-02-07', text_color="white", text_align='center', text_font_size='16px', render_mode='css',
+        #                               background_fill_color='#d3d3d3', background_fill_alpha=0.4)
+        # self.buysell_strat_fig.add_layout(self.date_hover_label)
+        self.buysell_strat_fig.xaxis.visible = False
 
 
     def plot_stock_prices_table(self):
@@ -445,7 +443,6 @@ class Graph:
 
 
     def plot_trading_strategy_table(self):
-
         columns = [
             TableColumn(field='ticker', title='Ticker'),
             # TableColumn(field='total transactions', title='total transactions'),
@@ -454,7 +451,9 @@ class Graph:
             # TableColumn(field='buy/sell gain', title='buy/sell gain'),
             TableColumn(field='minmax buy/sell CAGR', title='buy/sell CAGR'),
             TableColumn(field='minmax CAGR', title='minmax CAGR'),
-            TableColumn(field='MACD1 CAGR', title='MACD CAGR')
+            TableColumn(field='MACD1 CAGR', title='MACD CAGR'),
+            TableColumn(field='EMA1 CAGR', title='EMA CAGR'),
+            TableColumn(field='EMA2 CAGR', title='EMA2 CAGR')
         ]
         self.trading_strategy_table = DataTable(source=self.stocks_source, columns=columns, height=800, autosize_mode='fit_viewport', css_classes=["table_rows"], index_position=None, margin=(5,5,5,25))
 
@@ -710,7 +709,7 @@ class Graph:
             self.date_hover_label.text = f'{date}'
             self.date_hover_label.x = x
 
-            title = f"O: {open_price}   H: {high_price}   L: {low_price}   C: {close_price} ({percent_change}%)"
+            title = f"{date}\tO: {open_price}   H: {high_price}   L: {low_price}   C: {close_price} ({percent_change}%)"
             self.candlestick_fig.title.text = title
             if percent_change >= 0:
                 self.candlestick_fig.title.text_color = 'green'
@@ -856,10 +855,10 @@ class Graph:
         self.candlestick_fig.x_range.on_change('end', self.autoscale_candlestick_yaxis)
         self.MACD_fig.x_range.on_change('start', self.autoscale_MACD_yaxis)
         self.MACD_fig.x_range.on_change('end', self.autoscale_MACD_yaxis)
-        self.minmax_fig.x_range.on_change('start', self.autoscale_minmax_yaxis)
-        self.minmax_fig.x_range.on_change('end', self.autoscale_minmax_yaxis)
-        self.buysell_MACD_fig.x_range.on_change('start', self.autoscale_buysell_MACD_yaxis)
-        self.buysell_MACD_fig.x_range.on_change('end', self.autoscale_buysell_MACD_yaxis)
+        self.buysell_ind_fig.x_range.on_change('start', self.autoscale_buysell_ind_yaxis)
+        self.buysell_ind_fig.x_range.on_change('end', self.autoscale_buysell_ind_yaxis)
+        self.buysell_strat_fig.x_range.on_change('start', self.autoscale_buysell_strat_yaxis)
+        self.buysell_strat_fig.x_range.on_change('end', self.autoscale_buysell_strat_yaxis)
 
 
     def autoscale_candlestick_yaxis(self, attr, old, new):
@@ -924,12 +923,12 @@ class Graph:
         y_range.end = max_val + pad
 
 
-    def autoscale_minmax_yaxis(self, attr, old, new):
+    def autoscale_buysell_ind_yaxis(self, attr, old, new):
         index = [i for i in range(len(self.df.date))]
-        prices = self.df.high # high prices
+        prices = self.df.high  # high prices
 
-        x_range = self.minmax_fig.x_range
-        y_range = self.minmax_fig.y_range
+        x_range = self.buysell_ind_fig.x_range
+        y_range = self.buysell_ind_fig.y_range
         start, end = x_range.start, x_range.end
 
         min_val = math.inf
@@ -946,12 +945,12 @@ class Graph:
         y_range.end = max_val + pad
 
 
-    def autoscale_buysell_MACD_yaxis(self, attr, old, new):
+    def autoscale_buysell_strat_yaxis(self, attr, old, new):
         index = [i for i in range(len(self.df.date))]
-        prices = self.df.high # high prices
+        values = self.df.EMA_trend  # high prices
 
-        x_range = self.buysell_MACD_fig.x_range
-        y_range = self.buysell_MACD_fig.y_range
+        x_range = self.buysell_strat_fig.x_range
+        y_range = self.buysell_strat_fig.y_range
         start, end = x_range.start, x_range.end
 
         min_val = math.inf
@@ -959,8 +958,8 @@ class Graph:
 
         for i in index:
             if i >= start and i <= end:
-                max_val = max(prices[i], max_val)
-                min_val = min(prices[i], min_val)
+                max_val = max(values[i], max_val)
+                min_val = min(values[i], min_val)
 
         pad = (max_val - min_val) * 0.05
 
@@ -1020,6 +1019,10 @@ class Graph:
         df['bullish_3_line_strike'] = candlestick_pattern.get_3_line_strike(df, bullish=True)
         # print(sum(df['bullish_3_line_strike']))
         df['bearish_3_line_strike'] = candlestick_pattern.get_3_line_strike(df, bearish=True)
+
+        # EMA indicators
+        df['EMA_trend'] = [1 if i != 0 and (EMA9 - df.EMA_9[i-1]) > 0 else 0 for i, EMA9 in enumerate(df.EMA_9)]
+
         return df
 
 
@@ -1031,6 +1034,8 @@ class Graph:
         for col in fund_data[3:]:
             if 'EPS' not in columns[i]:
                 fund_data[i] = [int(v/10**6) for v in fund_data[i]]
+            # add commas to digits (1000 -> 1,000) for readability
+            fund_data[i] = [f'{v:,}' for v in fund_data[i]]
             i += 1
 
         fund_dict = {key: vals for i, (key, vals) in enumerate(zip(columns, fund_data))}
@@ -1047,31 +1052,33 @@ class Graph:
         stock_data = {key: vals for key, vals in self.stock_dict.items()}
         minmax_stocks_df = pd.DataFrame(columns=['ticker', 'minmax total transactions', 'minmax buy/sell profit', 'minmax total profit', 'minmax buy/sell gain', 'minmax buy/sell CAGR', 'minmax CAGR'], index=list(range(0, len(self.stocks))))
         MACD1_stocks_df = pd.DataFrame(columns=['ticker', 'MACD1 total transactions', 'MACD1 buy/sell profit', 'MACD1 total profit', 'MACD1 buy/sell gain', 'MACD1 buy/sell CAGR', 'MACD1 CAGR'], index=list(range(0, len(self.stocks))))
+        EMA1_stocks_df = pd.DataFrame(columns=['ticker', 'EMA1 total transactions', 'EMA1 buy/sell profit', 'EMA1 total profit', 'EMA1 buy/sell gain', 'EMA1 buy/sell CAGR', 'EMA1 CAGR'], index=list(range(0, len(self.stocks))))
 
         # breakpoint()
+        strat_results_df_list = []
+        indicator_names = ['minmax', 'MACD1', 'EMA1', 'EMA2']
 
         for i, ticker in enumerate(self.stocks):
             stock = self.stocks[ticker]
+            buysell_strat_functions = [strat.buysell_minmax, strat.buysell_MACD1, strat.buysell_EMA1, strat.buysell_EMA2]
+            # ensures program works correctly when user enters a new trading strategy, must add to indicator_names list and buysell_strat_functions
+            assert(len(indicator_names) == len(buysell_strat_functions))
 
-            df_minmax_optimal, df_minmax_real = strat.buysell_minmax(stock)
-            df_MACD1 = strat.buysell_MACD1(stock.dates, stock.prices['high'], stock.tech_indicators)
+            for ind_name, func in zip(indicator_names, buysell_strat_functions):
+                strat_results_df = pd.DataFrame(columns=['ticker', f'{ind_name} total transactions', f'{ind_name} buy/sell profit', f'{ind_name} total profit', f'{ind_name} buy/sell gain', f'{ind_name} buy/sell CAGR', f'{ind_name} CAGR'], index=list(range(0, len(self.stocks))))
 
-            minmax_rst = list(strat.evaluate_strategy(stock, df_minmax_real))
+                buysell_df = func(stock)
+                eval_rst = list(strat.evaluate_strategy(stock, buysell_df))
+                eval_rst = [round(val, 2) for val in eval_rst]
+                eval_rst.insert(0, ticker.upper())
 
-            minmax_rst = [round(val, 2) for val in minmax_rst]
-            MACD1_rst = list(strat.evaluate_strategy(stock, df_MACD1))
-            try:
-                MACD1_rst = [round(val, 2) for val in MACD1_rst]
-            except:
-                breakpoint()
+                strat_results_df.loc[i, :] = list(eval_rst)
+                strat_results_df_list.append(strat_results_df)
 
-            minmax_rst.insert(0, ticker.upper())
-            MACD1_rst.insert(0, ticker.upper())
+        buysell_indicators_df = strat_results_df_list[0]
+        for strat_rst_df in strat_results_df_list[1:]:
+            buysell_indicators_df = buysell_indicators_df.merge(strat_rst_df, on="ticker", how="inner")
 
-            minmax_stocks_df.loc[i, :] = list(minmax_rst)
-            MACD1_stocks_df.loc[i, :] = list(MACD1_rst)
-
-        buysell_indicators_df = pd.merge(minmax_stocks_df, MACD1_stocks_df, on="ticker", how="inner")
         return buysell_indicators_df
 
 
@@ -1127,7 +1134,8 @@ class Graph:
         self.plot()
         self.autoscale_candlestick_yaxis(1, 1, 1)
         self.autoscale_MACD_yaxis(1, 1, 1)
-        self.autoscale_minmax_yaxis(1, 1, 1)
+        self.autoscale_buysell_ind_yaxis(1, 1, 1)
+        self.autoscale_buysell_strat_yaxis(1, 1, 1)
 
 
     def remove_prev_hover_tool(self):
@@ -1137,24 +1145,12 @@ class Graph:
 
 
     def get_html_formatter(self):
-
         template = """
         <div style="color:<%=percent_change_color%>";>
-        <%= value %></div>
+        <%= value %>
+        </div>
         """
         return HTMLTemplateFormatter(template=template)
-
-
- #    def get_html_formatter(self):
- #
- #        template = """
- #        <div style="color:<%=percent_change_color%>";>
- #        <%= num.toLocaleString('en', {useGrouping:true})
- # %></div>
- #        """
- #        return HTMLTemplateFormatter(template=template)
-
-    # console.log(num.toLocaleString("en-US")); // 1, 234, 567.89
 
 
 if __name__ == '__main__':

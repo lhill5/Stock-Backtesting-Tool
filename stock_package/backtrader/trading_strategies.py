@@ -5,39 +5,62 @@ from scipy.signal import argrelextrema
 import math
 import financial_calcs as fin
 import datetime
+from bokeh.models import ColumnDataSource
+
+
+def buysell_indicators(stock, seq):
+    cols = ['minmax', 'MACD', 'EMA1', 'EMA2']
+    indicators_df = []
+    indicators_source = []
+
+    indicators_df.append(buysell_minmax(stock))
+    indicators_df.append(buysell_MACD1(stock))
+    indicators_df.append(buysell_EMA1(stock))
+    indicators_df.append(buysell_EMA2(stock))
+
+    for ind in indicators_df:
+        ind['seq'] = seq
+        indicators_source.append(ColumnDataSource(ColumnDataSource.from_df(ind)))
+
+    indicators_dict = {col: source for col, source in zip(cols, indicators_source)}
+    return indicators_dict
 
 
 def buysell_minmax(stock):
     dates = stock.dates
     prices = stock.prices['high']
 
-    df = pd.DataFrame(prices, columns=['data'])
+    df_optimal = pd.DataFrame(prices, columns=['data'])
     n = 1  # number of points to be checked before and after
 
     # Find local peaks
-    df['min'] = df.iloc[argrelextrema(df.data.values, np.less_equal,
+    df_optimal['min'] = df_optimal.iloc[argrelextrema(df_optimal.data.values, np.less_equal,
                         order=n)[0]]['data']
-    df['max'] = df.iloc[argrelextrema(df.data.values, np.greater_equal,
+    df_optimal['max'] = df_optimal.iloc[argrelextrema(df_optimal.data.values, np.greater_equal,
                         order=n)[0]]['data']
-    df = df.rename(columns={'min': 'buy', 'max': 'sell'})
+    df_optimal = df_optimal.rename(columns={'min': 'buy', 'max': 'sell'})
 
-    df_trades = df.copy()
-    df_trades['data'] = np.nan
-    df_trades['buy'] = np.nan
-    df_trades['sell'] = np.nan
+    df_real = df_optimal.copy()
+    df_real['data'] = np.nan
+    df_real['buy'] = np.nan
+    df_real['sell'] = np.nan
 
     # create offset df where buy/sell indicators are +1 index from df (since minmax requires knowing future data)
-    for i, row in df.iterrows():
-        if i != 0 and not math.isnan(df['buy'][i-1]):
-            df_trades['data'][i] = df_trades['buy'][i] = prices[i]
-        if i != 0 and not math.isnan(df['sell'][i - 1]):
-            df_trades['data'][i] = df_trades['sell'][i] = prices[i]
+    for i, row in df_optimal.iterrows():
+        if i != 0 and not math.isnan(df_optimal['buy'][i-1]):
+            df_real['data'][i] = df_real['buy'][i] = prices[i]
+        if i != 0 and not math.isnan(df_optimal['sell'][i - 1]):
+            df_real['data'][i] = df_real['sell'][i] = prices[i]
 
-    return df, df_trades
+    return df_real
 
 
 # buy when MACD rises above signal and sell when MACD falls below signal
-def buysell_MACD1(dates, prices, tech_indicators):
+def buysell_MACD1(stock):
+    dates = stock.dates
+    prices = stock.prices['high']
+    tech_indicators = stock.tech_indicators
+
     MACD = tech_indicators['MACD']
     signal = tech_indicators['signal']
     histogram = tech_indicators['histogram']
@@ -87,7 +110,11 @@ def buysell_MACD1(dates, prices, tech_indicators):
 
 
 # buy when histogram crosses 0 threshold, RSI less than 70 | sell when histogram below 0 and RSI > 30
-def buysell_MACD2(dates, prices, tech_indicators):
+def buysell_MACD2(stock):
+    dates = stock.dates
+    prices = stock.prices['high']
+    tech_indicators = stock.tech_indicators
+
     MACD = tech_indicators['MACD']
     signal = tech_indicators['signal']
     histogram = tech_indicators['histogram']
@@ -133,7 +160,11 @@ def buysell_MACD2(dates, prices, tech_indicators):
     return MACD_signals
 
 
-def buysell_MACD3(dates, prices, tech_indicators):
+def buysell_MACD3(stock):
+    dates = stock.dates
+    prices = stock.prices['high']
+    tech_indicators = stock.tech_indicators
+
     MACD = tech_indicators['MACD']
     signal = tech_indicators['signal']
     histogram = tech_indicators['histogram']
@@ -174,6 +205,102 @@ def buysell_MACD3(dates, prices, tech_indicators):
     return buysell_df
 
 
+# buy if EMA 9 crosses above EMA 200
+def buysell_EMA1(stock):
+    dates = stock.dates
+    prices = stock.prices['high']
+    tech_indicators = stock.tech_indicators
+
+    EMAs = tech_indicators['EMA']
+    EMA_9, EMA_50, EMA_150, EMA_200 = EMAs[9], EMAs[50], EMAs[150], EMAs[200]
+    buysell_df = pd.DataFrame(columns=['buy', 'sell'], index=list(range(0, len(dates))))
+
+    i = 0
+    end_i = len(dates)-1
+    buy_list = []
+    sell_list = []
+    bought = False
+    prev_difference = None
+
+    for date, price, EMA9_val, EMA50_val, EMA150_val, EMA200_val in zip(dates, prices, EMA_9, EMA_50, EMA_150, EMA_200):
+        difference = EMA9_val - EMA200_val
+
+        buy_price = np.nan
+        sell_price = np.nan
+
+        # buy signal
+        if prev_difference is not None:
+            if (difference > 0 and not bought):
+                buy_price = price
+                bought = True
+            # sell signal
+            elif (i == end_i and difference > 0) or difference < 0 and bought:
+                sell_price = price
+                bought = False
+
+        buy_list.append(buy_price)
+        sell_list.append(sell_price)
+
+        # if action is not None:
+        #     MACD_signals.append(action)
+        prev_difference = difference
+        i += 1
+
+    # success_rate = 0 if total_trades == 0 else (successful_trades / total_trades) * 100
+    # plt.plot(dates, differences)
+    # plt.show()
+
+    buysell_df['buy'] = buy_list
+    buysell_df['sell'] = sell_list
+    return buysell_df
+
+
+# tracks trend of EMA 9
+def buysell_EMA2(stock):
+    dates = stock.dates
+    prices = stock.prices['high']
+    tech_indicators = stock.tech_indicators
+
+    EMAs = tech_indicators['EMA']
+    EMA_9, EMA_50, EMA_150, EMA_200 = EMAs[9], EMAs[50], EMAs[150], EMAs[200]
+    buysell_df = pd.DataFrame(columns=['buy', 'sell'], index=list(range(0, len(dates))))
+
+    i = 0
+    end_i = len(dates)-1
+    buy_list = [np.nan]
+    sell_list = [np.nan]
+    bought = False
+    prev_EMA9 = EMA_9[0]
+    negative_trend_count = 0
+
+    for date, price, EMA9_val, EMA50_val, EMA150_val, EMA200_val in zip(dates[1:], prices[1:], EMA_9[1:], EMA_50[1:], EMA_150[1:], EMA_200[1:]):
+        difference = EMA9_val - prev_EMA9
+        buy_price = np.nan
+        sell_price = np.nan
+
+        # buy signal
+        if (difference > 0 and not bought):
+            negative_trend_count = 0
+            buy_price = price
+            bought = True
+            # sell signal
+        elif difference <= 0 and bought:
+            negative_trend_count += 1
+            if negative_trend_count == 1:
+                sell_price = price
+                bought = False
+
+        buy_list.append(buy_price)
+        sell_list.append(sell_price)
+
+        prev_EMA9 = EMA9_val
+        i += 1
+
+    buysell_df['buy'] = buy_list
+    buysell_df['sell'] = sell_list
+    return buysell_df
+
+
 def plot_results(df, df_trades):
 
     # plt.scatter(df.index, df['buy'], c='g')
@@ -198,6 +325,7 @@ def evaluate_strategy(stock, indices):
 
     shares = 0
     total_transactions = 0
+    successful_transactions = 0
     total_profit = 0
     annual_return = 1
     buy_queue = []
@@ -258,12 +386,17 @@ def evaluate_strategy(stock, indices):
 
                     shares -= 1
                     total_transactions += 1
+                    if profit > 0:
+                        successful_transactions += 1
 
                 buy_queue = []
                 # assert(shares == 0)
 
     avg_return_percent = ((annual_return ** (365. / num_days)) - 1) * 100
     CAGR = fin.calculate_AROR(principal, current_balance, num_days)
+
+    success_rate = round((successful_transactions / total_transactions) * 100, 2)
+    print(f'success rate: {success_rate}')
 
     # print(f'prices: {prices[0], prices[-1]}')
     # print(f'annual return: {annual_return}')
