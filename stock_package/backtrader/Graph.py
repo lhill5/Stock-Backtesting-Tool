@@ -8,7 +8,7 @@ from financial_calcs import *
 import candlestick_patterns as candlestick_pattern
 from Stock import Stock
 import trading_strategies as strat
-from random_functions import print_df
+from random_functions import *
 
 from bokeh.plotting import figure, show, output_file, curdoc, reset_output
 from bokeh.models import tools, HoverTool, CrosshairTool, ColumnDataSource, CustomJS, Button, Rect, Span, CheckboxButtonGroup, DatePicker, MultiChoice, Range1d, LinearAxis, Label, LabelSet, Title, TableColumn, DataTable, HTMLTemplateFormatter, Panel, Tabs, Column, Slider, Spinner, Div
@@ -27,11 +27,27 @@ class Graph:
         self.database = database
 
         self.candlestick_fig = None
+        self.candlestick_MACD_fig = None
+        self.candlestick_EMA_fig = None
+        self.candlestick_RSI_fig = None
+        self.candlestick_ADX_fig = None
+
         self.EMA_difference_fig = None
         self.MACD_fig = None
         self.RSI_fig = None
-        self.buysell_ind_fig = None
+        self.ADX_fig = None
+
+        self.buysell_MACD_fig = None
+        self.buysell_EMA_fig = None
+        self.buysell_RSI_fig = None
+        self.buysell_ADX_fig = None
+
         self.buysell_strat_fig = None
+
+        self.line_x0 = 0
+        self.line_y0 = 0
+        self.line_x1 = 0
+        self.line_y1 = 0
 
         # intrinsic value metrics
         # _______________________
@@ -75,8 +91,8 @@ class Graph:
 
         self.moving_averages = self.tech_indicators['EMA'].keys()
         self.df = self.get_stock_df()
-        # self.fund_df = self.get_fundamental_df()
-        self.stocks_df = self.get_stocks_df()
+        self.fund_df = self.get_fundamental_df()
+        self.buysell_results_df = self.get_buysell_results_df()
 
         self.len = self.df.shape[0]
         self.start, self.end = 0, self.len - 1
@@ -89,8 +105,8 @@ class Graph:
         self.stock_metrics_df = self.get_stock_metrics_df()
 
         self.stock_source = ColumnDataSource(ColumnDataSource.from_df(self.df))
-        # self.fundamental_source = ColumnDataSource(ColumnDataSource.from_df(self.fund_df))
-        self.stocks_source = ColumnDataSource(ColumnDataSource.from_df(self.stocks_df))
+        self.fundamental_source = ColumnDataSource(ColumnDataSource.from_df(self.fund_df))
+        self.buysell_results_source = ColumnDataSource(ColumnDataSource.from_df(self.buysell_results_df))
         self.buysell_indicators_source = strat.buysell_indicators(stock, self.df['seq'])
 
         # self.minmax_rst_source = ColumnDataSource(ColumnDataSource.from_df(self.minmax_rst_df))
@@ -114,7 +130,11 @@ class Graph:
 
             self.MACD_fig = figure(x_axis_type='linear', tools="crosshair", toolbar_location=None, width=1400, height=200, x_range=self.candlestick_fig.x_range)
             self.RSI_fig = figure(x_axis_type='linear', tools="crosshair", toolbar_location=None, width=1400, height=200, x_range=self.candlestick_fig.x_range, y_range=(0, 100))
-            self.buysell_ind_fig = figure(x_axis_type='linear', tools="crosshair", toolbar_location=None, width=1400, height=200, x_range=self.candlestick_fig.x_range)
+            self.ADX_fig = figure(x_axis_type='linear', tools="crosshair", toolbar_location=None, width=1400, height=200, x_range=self.candlestick_fig.x_range)
+            self.buysell_MACD_fig = figure(x_axis_type='linear', tools="crosshair", toolbar_location=None, width=1400, height=200, x_range=self.candlestick_fig.x_range)
+            self.buysell_EMA_fig = figure(x_axis_type='linear', tools="crosshair", toolbar_location=None, width=1400, height=200, x_range=self.candlestick_fig.x_range)
+            self.buysell_RSI_fig = figure(x_axis_type='linear', tools="crosshair", toolbar_location=None, width=1400, height=200, x_range=self.candlestick_fig.x_range)
+            self.buysell_ADX_fig = figure(x_axis_type='linear', tools="crosshair", toolbar_location=None, width=1400, height=200, x_range=self.candlestick_fig.x_range)
             self.buysell_strat_fig = figure(x_axis_type='linear', tools="crosshair", toolbar_location=None, width=1400, height=200, x_range=self.candlestick_fig.x_range)
 
             # breakpoint()
@@ -128,22 +148,32 @@ class Graph:
             self.above_candle_fig.add_tools(crosshair)
             self.MACD_fig.add_tools(crosshair)
             self.RSI_fig.add_tools(crosshair)
-            self.buysell_ind_fig.add_tools(crosshair)
+            self.ADX_fig.add_tools(crosshair)
+            self.buysell_MACD_fig.add_tools(crosshair)
+            self.buysell_EMA_fig.add_tools(crosshair)
+            self.buysell_RSI_fig.add_tools(crosshair)
+            self.buysell_ADX_fig.add_tools(crosshair)
             self.buysell_strat_fig.add_tools(crosshair)
 
-            # initializes event listeners for interactivity tools
-            self.init_events()
-            self.init_button()
-            self.init_autoscale()
+            # # initializes event listeners for interactivity tools
+            # self.init_events()
+            # self.init_button()
+            # self.init_autoscale()
+
         else:
             self.candlestick_fig.x_range.start = self.start
             self.candlestick_fig.x_range.end = self.end
             self.candlestick_fig.y_range.start = self.y_limits[0]
-            self.candlestick_fig.y_range.start = self.y_limits[1]
+            self.candlestick_fig.y_range.end = self.y_limits[1]
             self.MACD_fig.x_range = self.candlestick_fig.x_range
             self.RSI_fig.x_range = self.candlestick_fig.x_range
-            self.buysell_ind_fig.x_range = self.candlestick_fig.x_range
+            self.ADX_fig.x_range = self.candlestick_fig.x_range
+            self.buysell_MACD_fig.x_range = self.candlestick_fig.x_range
+            self.buysell_EMA_fig.x_range = self.candlestick_fig.x_range
+            self.buysell_RSI_fig.x_range = self.candlestick_fig.x_range
+            self.buysell_ADX_fig.x_range = self.candlestick_fig.x_range
             self.buysell_strat_fig.x_range = self.candlestick_fig.x_range
+
 
     def plot(self):
         # ____ hover tooltip ____
@@ -192,12 +222,19 @@ class Graph:
         self.glyphs.append(line_glyph)
 
         self.plot_candlestick_graph()
+        # self.candlestick_MACD_fig = self.candlestick_fig
+        # self.plot_buysell_lines(self.candlestick_MACD_fig, 'MACD')
+
         self.plot_EMA_difference_graph()
         self.plot_EMA_above_candlestick()
         self.plot_candlestick_patterns()
         self.plot_MACD_graph()
         self.plot_RSI_graph()
-        self.plot_buysell_ind_graph()
+        self.plot_ADX_graph()
+        self.plot_buysell_ind_graph(self.buysell_MACD_fig, 'MACD')
+        self.plot_buysell_ind_graph(self.buysell_EMA_fig, 'EMA2')
+        self.plot_buysell_ind_graph(self.buysell_RSI_fig, 'RSI')
+        self.plot_buysell_ind_graph(self.buysell_ADX_fig, 'ADX')
         self.plot_buysell_strat_graph()
 
         # creates data-tables
@@ -206,43 +243,56 @@ class Graph:
         self.plot_ticker_list_table()
         self.plot_stock_metrics_table()
 
+        # autoscale axes when first plotting stock (accounts for padding between candlestick chart and volume bars)
+        self.autoscale_candlestick_yaxis(1, 1, 1)
+        self.autoscale_MACD_yaxis(1, 1, 1)
+        self.autoscale_ADX_yaxis(1, 1, 1)
+        self.autoscale_buysell_ind_yaxis(1, 1, 1)
+        self.autoscale_buysell_strat_yaxis(1, 1, 1)
+
+        # initializes event listeners for interactivity tools
+        self.init_events()
+        self.init_button()
+        self.init_autoscale()
+
         # fundamental data tables
-        # self.plot_income_statement_table()
-        # self.plot_balance_sheet_table()
-        # self.plot_cash_flow_table()
+        self.plot_income_statement_table()
+        self.plot_balance_sheet_table()
+        self.plot_cash_flow_table()
 
         # adds interactive widgets (date slicer, stock picker, etc.)
         self.add_interactive_tools()
 
-        # autoscale axes when first plotting stock (accounts for padding between candlestick chart and volume bars)
-        self.autoscale_candlestick_yaxis(1, 1, 1)
-        self.autoscale_MACD_yaxis(1, 1, 1)
-        self.autoscale_buysell_ind_yaxis(1, 1, 1)
-        self.autoscale_buysell_strat_yaxis(1, 1, 1)
 
         fundamental_title = Div(text="All values are in USD Millions.", margin=(5,5,5,25))
 
         # breakpoint()
         # tab0 = Panel(child=row(self.stock_prices_table, self.trading_strategy_table), title='stock prices')
 
-        tab1 = Panel(child=column(row(self.start_date_slicer, self.end_date_slicer, self.select_stock), self.candlestick_fig, self.buysell_ind_fig, self.buysell_strat_fig), title='candlestick chart')
+        MACD_tab = Panel(child=column(row(self.start_date_slicer, self.end_date_slicer, self.select_stock), self.candlestick_fig, self.MACD_fig, self.buysell_MACD_fig), title='MACD chart')
+        RSI_tab = Panel(child=column(row(self.start_date_slicer, self.end_date_slicer, self.select_stock), self.candlestick_fig, self.RSI_fig, self.buysell_RSI_fig), title='RSI chart')
+        EMA_tab = Panel(child=column(row(self.start_date_slicer, self.end_date_slicer, self.select_stock), self.candlestick_fig, self.buysell_EMA_fig), title='EMA chart')
+        ADX_tab = Panel(child=column(row(self.start_date_slicer, self.end_date_slicer, self.select_stock), self.candlestick_fig, self.ADX_fig, self.buysell_ADX_fig), title='ADX chart')
+
         # tab2 = Panel(child=column(self.BYFCF_spinner, self.GR_spinner, self.all_stocks_table), title='tabular view')
-        tab3 = Panel(child=row(self.stock_prices_table, self.trading_strategy_table), title='stock prices')
+        trading_strat_results = Panel(child=row(self.stock_prices_table, self.trading_strategy_table), title='All trading strategy returns')
         # tab4 = Panel(child=row(self.BYFCF_spinner, self.GR_spinner), title='financial data')
 
-        # tab5 = Panel(child=column(fundamental_title, self.income_statement_table), title='income statement')
-        # tab6 = Panel(child=column(fundamental_title, self.balance_sheet_table), title='balance sheet')
-        # tab7 = Panel(child=column(fundamental_title, self.cash_flow_table), title='cash flow statement')
+        income_tab = Panel(child=column(fundamental_title, self.income_statement_table), title='income statement')
+        balance_tab = Panel(child=column(fundamental_title, self.balance_sheet_table), title='balance sheet')
+        cashflow_tab = Panel(child=column(fundamental_title, self.cash_flow_table), title='cash flow statement')
 
         # layout = Tabs(tabs=[tab1, tab3, tab5, tab6, tab7])
-        layout = Tabs(tabs=[tab1, tab3])
+        layout = Tabs(tabs=[MACD_tab, RSI_tab, EMA_tab, ADX_tab, income_tab, balance_tab, cashflow_tab, trading_strat_results])
 
         curdoc().add_root(layout)
 
 
     def plot_candlestick_graph(self):
-        df = self.df
+        # plots vertical lines where user should buy or sell based on the below indicator
+        self.plot_buysell_lines(self.candlestick_fig, 'ADX')
 
+        df = self.df
         inc = df.close > df.open
         dec = df.open > df.close
         candle_source_inc = ColumnDataSource(ColumnDataSource.from_df(df.loc[inc]))
@@ -280,6 +330,7 @@ class Graph:
         volume_up = self.candlestick_fig.vbar('seq', w-0.1, 0, 'volume', source=candle_source_inc, y_range_name='volume_axis', fill_color = "rgba(18, 201, 140, 0.35)", line_color = "rgba(18, 201, 140, 0.35)")
         volume_down = self.candlestick_fig.vbar('seq', w-0.1, 0, 'volume', source=candle_source_dec, y_range_name='volume_axis', fill_color = "rgba(242, 88, 62, 0.35)", line_color = "rgba(242, 88, 62, 0.35)")
         self.glyphs.extend([volume_up, volume_down])
+
 
         # add legend
         self.candlestick_fig.legend.location = "top_left"
@@ -398,12 +449,37 @@ class Graph:
         self.RSI_fig.xaxis.visible = False
 
 
-    def plot_buysell_ind_graph(self):
-        buysell_ind = self.buysell_ind_fig.line('seq', 'high', source=self.stock_source, line_color='#ffa500')
-        self.buysell_ind_fig.scatter('seq', 'buy', marker="circle", source=self.buysell_indicators_source['EMA2'], color="green")
-        self.buysell_ind_fig.scatter('seq', 'sell', marker="circle", source=self.buysell_indicators_source['EMA2'], color="red")
+    def plot_ADX_graph(self):
 
-        self.tech_indicator_plots.append(self.buysell_ind_fig)
+        # add ADX indicator
+        ADX = self.ADX_fig.line('seq', 'ADX', source=self.stock_source, line_color='#faf0e6')
+        pos_DI = self.ADX_fig.line('seq', '+DI', source=self.stock_source, line_color='#32cd32')
+        neg_DI = self.ADX_fig.line('seq', '-DI', source=self.stock_source, line_color='#ff0800')
+        # hline_20 = Span(location=20, dimension='height', line_color='silver', line_dash='dotdash', line_width=2)
+        hline_20 = Span(location=20, dimension='width', line_color='#6A5ACD', line_dash='dashed', line_width=2)
+
+        self.ADX_fig.add_layout(hline_20)
+        self.plot_buysell_lines(self.ADX_fig, 'ADX')
+
+        self.tech_indicator_plots.append(self.ADX_fig)
+        self.glyphs.extend([ADX, pos_DI, neg_DI])
+
+        # text box to show which date is currently being hovered over on chart
+        # self.date_hover_label = Label(x=83, y=0, x_units='data', y_units='data',
+        #                               text='Date: 2021-02-07', text_color="white", text_align='center', text_font_size='16px', render_mode='css',
+        #                               background_fill_color='#d3d3d3', background_fill_alpha=0.4)
+        # self.ADX_fig.add_layout(self.date_hover_label)
+
+        self.ADX_fig.xaxis.visible = False
+
+
+    def plot_buysell_ind_graph(self, fig, ind):
+
+        buysell_ind = fig.line('seq', 'high', source=self.stock_source, line_color='#ffa500')
+        fig.scatter('seq', 'buy', marker="circle", source=self.buysell_indicators_source[ind], color="green")
+        fig.scatter('seq', 'sell', marker="circle", source=self.buysell_indicators_source[ind], color="red")
+
+        self.tech_indicator_plots.append(fig)
         self.glyphs.append(buysell_ind)
 
         # text box to show which date is currently being hovered over on chart
@@ -411,7 +487,7 @@ class Graph:
         #                               text='Date: 2021-02-07', text_color="white", text_align='center', text_font_size='16px', render_mode='css',
         #                               background_fill_color='#d3d3d3', background_fill_alpha=0.4)
         # self.buysell_ind_fig.add_layout(self.date_hover_label)
-        self.buysell_ind_fig.xaxis.visible = False
+        fig.xaxis.visible = False
 
 
     def plot_buysell_strat_graph(self):
@@ -451,11 +527,13 @@ class Graph:
             # TableColumn(field='buy/sell gain', title='buy/sell gain'),
             TableColumn(field='minmax buy/sell CAGR', title='buy/sell CAGR'),
             TableColumn(field='minmax CAGR', title='minmax CAGR'),
-            TableColumn(field='MACD1 CAGR', title='MACD CAGR'),
-            TableColumn(field='EMA1 CAGR', title='EMA CAGR'),
-            TableColumn(field='EMA2 CAGR', title='EMA2 CAGR')
+            TableColumn(field='MACD1 CAGR', title='MACD1 CAGR'),
+            TableColumn(field='EMA1 CAGR', title='EMA1 CAGR'),
+            TableColumn(field='EMA2 CAGR', title='EMA2 CAGR'),
+            TableColumn(field='RSI CAGR', title='RSI CAGR'),
+            TableColumn(field='ADX CAGR', title='ADX CAGR')
         ]
-        self.trading_strategy_table = DataTable(source=self.stocks_source, columns=columns, height=800, autosize_mode='fit_viewport', css_classes=["table_rows"], index_position=None, margin=(5,5,5,25))
+        self.trading_strategy_table = DataTable(source=self.buysell_results_source, columns=columns, height=800, autosize_mode='fit_viewport', css_classes=["table_rows"], index_position=None, margin=(5,5,5,25))
 
 
     def plot_ticker_list_table(self):
@@ -623,14 +701,90 @@ class Graph:
         """)
 
 
+    # def draw_rect_event(self, cb_obj):
+    #     data = self.draw_rect_source.data
+    #     # for key in data:
+    #     #     data[key] = list(data[key])
+    #
+    #     button_source = self.button_source
+    #     x_range = self.candlestick_fig.x_range
+    #     y_limits = (self.candlestick_fig.y_range.start, self.candlestick_fig.y_range.end)
+    #
+    #     y_min = y_limits[0]
+    #     y_max = y_limits[1]
+    #     button_value = button_source.data['value'][0]
+    #
+    #     if button_value:
+    #         # breakpoint()
+    #
+    #         height = y_max - y_min
+    #         y = y_min + height / 2
+    #         event = cb_obj.event_name
+    #
+    #         x = None
+    #         width = None
+    #         # breakpoint()
+    #         if event == 'panstart':
+    #             width = 0
+    #             x = cb_obj.x + (width / 2)
+    #             self.line_x0 = x
+    #         elif event == 'pan':
+    #             x0 = self.line_x0
+    #             width = cb_obj.x - x0
+    #             x = x0 + (width / 2)
+    #             self.line_x1 = x0 + width
+    #
+    #         if data['x']:
+    #             data['x'].pop()
+    #
+    #
+    #         breakpoint()
+    #         if data['y']:
+    #             data['y'].pop()
+    #
+    #         if data['width']:
+    #             data['width'].pop()
+    #
+    #         if data['height']:
+    #             data['height'].pop()
+    #
+    #         # removes rectangle once user release the mouse - click
+    #         if event != 'panend':
+    #             data['x'].append(x)
+    #             data['y'].append(y)
+    #             data['width'].append(width)
+    #             data['height'].append(height)
+    #
+    #         # updates x_axis start / end values based on which direction user scrolled
+    #         else:
+    #             assert(len(data['x']) == 0)
+    #             data['x'].append(0)
+    #             data['y'].append(0)
+    #             data['width'].append(0)
+    #             data['height'].append(0)
+    #
+    #             # breakpoint()
+    #             # x0 = self.line_x0
+    #             # x1 = self.line_x1
+    #             #
+    #             # # swap if start is greater than end (start should always be before end)
+    #             # if x0 > x1:
+    #             #     x0, x1 = x1, x0
+    #             #
+    #             # # x_range.start = max(math.floor(x0), x_range.start)
+    #             # # x_range.end = min(math.ceil(x1), x_range.end)
+    #             # print(x_range.start, x_range.end)
+    #             # breakpoint()
+
+
     def draw_rect_event(self):
-        return CustomJS(args=dict(source=self.draw_rect_source, button_source=self.button_source, x_range=self.candlestick_fig.x_range, y_limits=(self.y_limits[0], self.y_limits[1])), code="""
+        return CustomJS(args=dict(source=self.draw_rect_source, button_source=self.button_source, x_range=self.candlestick_fig.x_range, y_limits=(self.candlestick_fig.y_range.start,  self.candlestick_fig.y_range.end)), code="""
             const data = source.data
-            
+    
             const y_min = y_limits[0]
             const y_max = y_limits[1]
-            const button_value = button_source.data['value'][0] 
-            
+            const button_value = button_source.data['value'][0]
+    
             if (button_value) {
     
                 let x, y, width, height
@@ -638,7 +792,7 @@ class Graph:
                 y = y_min + height/2
     
                 let event = cb_obj.event_name
-                
+    
                 if (event == 'panstart') {
                     width = 0
                     x = cb_obj['x'] + (width / 2)
@@ -663,23 +817,23 @@ class Graph:
                     data['width'].push(width)
                     data['height'].push(height)
                 }
-                
+    
                 // updates x_axis start/end values based on which direction user scrolled
                 if (event === 'panend') {
                     let x0 = Number(localStorage.getItem('line_x0'))
                     let x1 = Number(localStorage.getItem('line_x1'))
-                    
+    
                     // swap if start is greater than end (start should always be before end)
                     if (x0 > x1) {
                         let tmp = x0
                         x0 = x1
                         x1 = tmp
                     }
-                    
+    
                     x_range.start = Math.max(Math.floor(x0), x_range.start)
                     x_range.end = Math.min(Math.ceil(x1), x_range.end)
                 }
-                
+    
                 // emit update of data source
                 source.change.emit()
             }
@@ -855,8 +1009,16 @@ class Graph:
         self.candlestick_fig.x_range.on_change('end', self.autoscale_candlestick_yaxis)
         self.MACD_fig.x_range.on_change('start', self.autoscale_MACD_yaxis)
         self.MACD_fig.x_range.on_change('end', self.autoscale_MACD_yaxis)
-        self.buysell_ind_fig.x_range.on_change('start', self.autoscale_buysell_ind_yaxis)
-        self.buysell_ind_fig.x_range.on_change('end', self.autoscale_buysell_ind_yaxis)
+        self.ADX_fig.x_range.on_change('start', self.autoscale_ADX_yaxis)
+        self.ADX_fig.x_range.on_change('end', self.autoscale_ADX_yaxis)
+        self.buysell_MACD_fig.x_range.on_change('start', self.autoscale_buysell_ind_yaxis)
+        self.buysell_MACD_fig.x_range.on_change('end', self.autoscale_buysell_ind_yaxis)
+        self.buysell_EMA_fig.x_range.on_change('start', self.autoscale_buysell_ind_yaxis)
+        self.buysell_EMA_fig.x_range.on_change('end', self.autoscale_buysell_ind_yaxis)
+        self.buysell_RSI_fig.x_range.on_change('start', self.autoscale_buysell_ind_yaxis)
+        self.buysell_RSI_fig.x_range.on_change('end', self.autoscale_buysell_ind_yaxis)
+        self.buysell_ADX_fig.x_range.on_change('start', self.autoscale_buysell_ind_yaxis)
+        self.buysell_ADX_fig.x_range.on_change('end', self.autoscale_buysell_ind_yaxis)
         self.buysell_strat_fig.x_range.on_change('start', self.autoscale_buysell_strat_yaxis)
         self.buysell_strat_fig.x_range.on_change('end', self.autoscale_buysell_strat_yaxis)
 
@@ -864,6 +1026,7 @@ class Graph:
     def autoscale_candlestick_yaxis(self, attr, old, new):
         # source = ColumnDataSource({'date': self.df.date, 'high': self.df.high, 'low': self.df.low, 'index': [i for i in range(len(self.df.date))]})
         # pdb.set_trace()
+        # breakpoint()
         index = [i for i in range(len(self.df.date))]
         high = self.df.high
         low = self.df.low
@@ -895,9 +1058,12 @@ class Graph:
         # figures out what % the max volume bar takes up on the chart, then pads the bottom by the same % so that candlestick lines/bars don't intersect with volume bars
         max_vol_percent = divide(max_volume, volume_range)
         bottom_padding = max_vol_percent * candlestick_range
+        top_padding = (max_val - min_val) * 0.25
 
         y_range.start = min_val - bottom_padding - (pad/2)
-        y_range.end = max_val + pad
+        y_range.end = max_val + top_padding + pad
+        print(y_range.start, y_range.end)
+        print(max_val)
 
 
     def autoscale_MACD_yaxis(self, attr, old, new):
@@ -923,12 +1089,37 @@ class Graph:
         y_range.end = max_val + pad
 
 
+    def autoscale_ADX_yaxis(self, attr, old, new):
+        index = [i for i in range(len(self.df.date))]
+        ADX = self.df['ADX']
+        pos_DI = self.df['+DI']
+        neg_DI = self.df['-DI']
+
+        x_range = self.ADX_fig.x_range
+        y_range = self.ADX_fig.y_range
+        start, end = x_range.start, x_range.end
+
+        min_val = math.inf
+        max_val = -math.inf
+
+        for i in index:
+            if i >= start and i <= end:
+                max_val = max(ADX[i], pos_DI[i], neg_DI[i], max_val)
+                min_val = min(ADX[i], pos_DI[i], neg_DI[i], min_val)
+
+        pad = (max_val - min_val) * 0.05
+
+        y_range.start = min_val - pad
+        y_range.end = max_val + pad
+
+
     def autoscale_buysell_ind_yaxis(self, attr, old, new):
         index = [i for i in range(len(self.df.date))]
         prices = self.df.high  # high prices
 
-        x_range = self.buysell_ind_fig.x_range
-        y_range = self.buysell_ind_fig.y_range
+        # all buysell_MACD/EMA/RSI/ADX_fig are the same in terms of y axis limits (all plotting line chart of stock price)
+        x_range = self.buysell_MACD_fig.x_range
+        y_range = self.buysell_MACD_fig.y_range
         start, end = x_range.start, x_range.end
 
         min_val = math.inf
@@ -1048,19 +1239,15 @@ class Graph:
         return df
 
 
-    def get_stocks_df(self):
-        stock_data = {key: vals for key, vals in self.stock_dict.items()}
-        minmax_stocks_df = pd.DataFrame(columns=['ticker', 'minmax total transactions', 'minmax buy/sell profit', 'minmax total profit', 'minmax buy/sell gain', 'minmax buy/sell CAGR', 'minmax CAGR'], index=list(range(0, len(self.stocks))))
-        MACD1_stocks_df = pd.DataFrame(columns=['ticker', 'MACD1 total transactions', 'MACD1 buy/sell profit', 'MACD1 total profit', 'MACD1 buy/sell gain', 'MACD1 buy/sell CAGR', 'MACD1 CAGR'], index=list(range(0, len(self.stocks))))
-        EMA1_stocks_df = pd.DataFrame(columns=['ticker', 'EMA1 total transactions', 'EMA1 buy/sell profit', 'EMA1 total profit', 'EMA1 buy/sell gain', 'EMA1 buy/sell CAGR', 'EMA1 CAGR'], index=list(range(0, len(self.stocks))))
+    def get_buysell_results_df(self):
 
-        # breakpoint()
+        # this is repeated on line 11 of trading_strategies.py
         strat_results_df_list = []
-        indicator_names = ['minmax', 'MACD1', 'EMA1', 'EMA2']
+        indicator_names = ['minmax', 'MACD1', 'EMA1', 'EMA2', 'RSI', 'ADX']
 
         for i, ticker in enumerate(self.stocks):
             stock = self.stocks[ticker]
-            buysell_strat_functions = [strat.buysell_minmax, strat.buysell_MACD1, strat.buysell_EMA1, strat.buysell_EMA2]
+            buysell_strat_functions = [strat.buysell_minmax, strat.buysell_MACD1, strat.buysell_EMA1, strat.buysell_EMA2, strat.buysell_RSI, strat.buysell_ADX]
             # ensures program works correctly when user enters a new trading strategy, must add to indicator_names list and buysell_strat_functions
             assert(len(indicator_names) == len(buysell_strat_functions))
 
@@ -1075,11 +1262,11 @@ class Graph:
                 strat_results_df.loc[i, :] = list(eval_rst)
                 strat_results_df_list.append(strat_results_df)
 
-        buysell_indicators_df = strat_results_df_list[0]
+        buysell_results_df = strat_results_df_list[0]
         for strat_rst_df in strat_results_df_list[1:]:
-            buysell_indicators_df = buysell_indicators_df.merge(strat_rst_df, on="ticker", how="inner")
+            buysell_results_df = buysell_results_df.merge(strat_rst_df, on="ticker", how="inner")
 
-        return buysell_indicators_df
+        return buysell_results_df
 
 
     def get_ticker_list_df(self):
@@ -1134,6 +1321,7 @@ class Graph:
         self.plot()
         self.autoscale_candlestick_yaxis(1, 1, 1)
         self.autoscale_MACD_yaxis(1, 1, 1)
+        self.autoscale_ADX_yaxis(1, 1, 1)
         self.autoscale_buysell_ind_yaxis(1, 1, 1)
         self.autoscale_buysell_strat_yaxis(1, 1, 1)
 
@@ -1151,6 +1339,36 @@ class Graph:
         </div>
         """
         return HTMLTemplateFormatter(template=template)
+
+
+    def plot_buysell_lines(self, fig, ind):
+
+        dates = self.buysell_indicators_source[ind].data['dates']
+        buy_list = self.buysell_indicators_source[ind].data['buy']
+        sell_list = self.buysell_indicators_source[ind].data['sell']
+
+        vlines_queue = []
+        for date, buy, sell in zip(dates, buy_list, sell_list):
+            if isinstance(date, datetime.date):
+                # if str(date) == '2019-12-03':
+                #     breakpoint()
+
+                date_index = self.date_to_index[date]
+
+                if is_number(buy):
+                    vline = Span(location=date_index, dimension='height', line_color='#93c47d', line_dash='dotdash', line_width=2)
+                else:
+                    assert(is_number(sell))
+                    vline = Span(location=date_index, dimension='height', line_color='#DB575E', line_dash='dotdash', line_width=2)
+
+                vlines_queue.append((date_index, vline))
+                if len(vlines_queue) == 2:
+                    i2, vline2 = vlines_queue.pop()
+                    i1, vline1 = vlines_queue.pop()
+                    if (i2 - i1) != 1:
+                        print(i2-i1)
+                        fig.add_layout(vline1)
+                        fig.add_layout(vline2)
 
 
 if __name__ == '__main__':

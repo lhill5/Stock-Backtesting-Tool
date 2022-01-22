@@ -9,7 +9,7 @@ from bokeh.models import ColumnDataSource
 
 
 def buysell_indicators(stock, seq):
-    cols = ['minmax', 'MACD', 'EMA1', 'EMA2']
+    cols = ['minmax', 'MACD', 'EMA1', 'EMA2', 'RSI', 'ADX']
     indicators_df = []
     indicators_source = []
 
@@ -17,6 +17,8 @@ def buysell_indicators(stock, seq):
     indicators_df.append(buysell_MACD1(stock))
     indicators_df.append(buysell_EMA1(stock))
     indicators_df.append(buysell_EMA2(stock))
+    indicators_df.append(buysell_RSI(stock))
+    indicators_df.append(buysell_ADX(stock))
 
     for ind in indicators_df:
         ind['seq'] = seq
@@ -44,13 +46,16 @@ def buysell_minmax(stock):
     df_real['data'] = np.nan
     df_real['buy'] = np.nan
     df_real['sell'] = np.nan
+    df_real['dates'] = np.nan
 
     # create offset df where buy/sell indicators are +1 index from df (since minmax requires knowing future data)
     for i, row in df_optimal.iterrows():
         if i != 0 and not math.isnan(df_optimal['buy'][i-1]):
-            df_real['data'][i] = df_real['buy'][i] = prices[i]
+            df_real.loc[i, 'data'] = df_real.loc[i, 'buy'] = prices[i]
+            df_real.loc[i, 'dates'] = dates[i]
         if i != 0 and not math.isnan(df_optimal['sell'][i - 1]):
-            df_real['data'][i] = df_real['sell'][i] = prices[i]
+            df_real.loc[i, 'data'] = df_real.loc[i, 'sell'] = prices[i]
+            df_real.loc[i, 'dates'] = dates[i]
 
     return df_real
 
@@ -70,6 +75,7 @@ def buysell_MACD1(stock):
     i = 0
     buy_list = []
     sell_list = []
+    buysell_dates = []
     bought = False
     prev_MACD, prev_signal = MACD[0], signal[0]
     differences = []
@@ -83,21 +89,22 @@ def buysell_MACD1(stock):
 
         buy_price = np.nan
         sell_price = np.nan
+        buysell_date = np.nan
 
         # buy signal
         if MACD[i] > signal[i] and MACD_difference > 0.2 and not bought:
+            buysell_date = date
             buy_price = price
             bought = True
         # sell signal
         elif MACD[i] < signal[i] and MACD_difference < -0.2 and bought:
+            buysell_date = date
             sell_price = price
             bought = False
 
         buy_list.append(buy_price)
         sell_list.append(sell_price)
-
-        # if action is not None:
-        #     MACD_signals.append(action)
+        buysell_dates.append(buysell_date)
         i += 1
 
     # success_rate = 0 if total_trades == 0 else (successful_trades / total_trades) * 100
@@ -106,6 +113,7 @@ def buysell_MACD1(stock):
 
     buysell_df['buy'] = buy_list
     buysell_df['sell'] = sell_list
+    buysell_df['dates'] = buysell_dates
     return buysell_df
 
 
@@ -174,6 +182,7 @@ def buysell_MACD3(stock):
     i = 0
     buy_list = []
     sell_list = []
+    buysell_dates = []
     bought = False
     prev_MACD, prev_signal = MACD[0], signal[0]
     for date, price, MACD_val, signal_val, hist_val in zip(dates, prices, MACD, signal, histogram):
@@ -182,18 +191,22 @@ def buysell_MACD3(stock):
 
         buy_price = np.nan
         sell_price = np.nan
+        buysell_date = np.nan
 
         # buy signal
         if MACD[i] > signal[i] and not bought:
+            buysell_date = date
             buy_price = price
             bought = True
         # sell signal
         elif MACD[i] < signal[i] and bought:
+            buysell_date = date
             sell_price = price
             bought = False
 
         buy_list.append(buy_price)
         sell_list.append(sell_price)
+        buysell_dates.append(buysell_date)
 
         # if action is not None:
         #     MACD_signals.append(action)
@@ -202,6 +215,7 @@ def buysell_MACD3(stock):
     # success_rate = 0 if total_trades == 0 else (successful_trades / total_trades) * 100
     buysell_df['buy'] = buy_list
     buysell_df['sell'] = sell_list
+    buysell_df['dates'] = buysell_dates
     return buysell_df
 
 
@@ -219,6 +233,7 @@ def buysell_EMA1(stock):
     end_i = len(dates)-1
     buy_list = []
     sell_list = []
+    buysell_dates = []
     bought = False
     prev_difference = None
 
@@ -227,19 +242,23 @@ def buysell_EMA1(stock):
 
         buy_price = np.nan
         sell_price = np.nan
+        buysell_date = np.nan
 
-        # buy signal
         if prev_difference is not None:
+            # buy signal
             if (difference > 0 and not bought):
+                buysell_date = date
                 buy_price = price
                 bought = True
             # sell signal
             elif (i == end_i and difference > 0) or difference < 0 and bought:
+                buysell_date = date
                 sell_price = price
                 bought = False
 
         buy_list.append(buy_price)
         sell_list.append(sell_price)
+        buysell_dates.append(buysell_date)
 
         # if action is not None:
         #     MACD_signals.append(action)
@@ -252,6 +271,7 @@ def buysell_EMA1(stock):
 
     buysell_df['buy'] = buy_list
     buysell_df['sell'] = sell_list
+    buysell_df['dates'] = buysell_dates
     return buysell_df
 
 
@@ -269,6 +289,8 @@ def buysell_EMA2(stock):
     end_i = len(dates)-1
     buy_list = [np.nan]
     sell_list = [np.nan]
+    buysell_dates = [np.nan]
+
     bought = False
     prev_EMA9 = EMA_9[0]
     negative_trend_count = 0
@@ -277,14 +299,17 @@ def buysell_EMA2(stock):
         difference = EMA9_val - prev_EMA9
         buy_price = np.nan
         sell_price = np.nan
+        buysell_date = np.nan
 
         # buy signal
         if (difference > 0 and not bought):
+            buysell_date = date
             negative_trend_count = 0
             buy_price = price
             bought = True
             # sell signal
         elif difference <= 0 and bought:
+            buysell_date = date
             negative_trend_count += 1
             if negative_trend_count == 1:
                 sell_price = price
@@ -292,12 +317,129 @@ def buysell_EMA2(stock):
 
         buy_list.append(buy_price)
         sell_list.append(sell_price)
+        buysell_dates.append(buysell_date)
 
         prev_EMA9 = EMA9_val
         i += 1
 
     buysell_df['buy'] = buy_list
     buysell_df['sell'] = sell_list
+    buysell_df['dates'] = buysell_dates
+    return buysell_df
+
+
+def buysell_RSI(stock):
+    dates = stock.dates
+    prices = stock.prices['high']
+    tech_indicators = stock.tech_indicators
+    RSIs = tech_indicators['RSI']
+
+    buysell_df = pd.DataFrame(columns=['buy', 'sell'], index=list(range(0, len(dates))))
+
+    buy_list = []
+    sell_list = []
+    buysell_dates = []
+    bought = False
+
+    i = 0
+    for date, price, RSI in zip(dates, prices, RSIs):
+
+        buy_price = np.nan
+        sell_price = np.nan
+        buysell_date = np.nan
+
+        # buy signal
+        if (RSI < 30 and not bought):
+            buysell_date = date
+            negative_trend_count = 0
+            buy_price = price
+            bought = True
+
+        # sell signal
+        elif RSI > 70 and bought:
+            buysell_date = date
+            sell_price = price
+            bought = False
+
+        buy_list.append(buy_price)
+        sell_list.append(sell_price)
+        buysell_dates.append(buysell_date)
+
+        i += 1
+
+    buysell_df['buy'] = buy_list
+    buysell_df['sell'] = sell_list
+    buysell_df['dates'] = buysell_dates
+    return buysell_df
+
+
+def buysell_ADX(stock):
+    dates = stock.dates
+    ADXs = stock.tech_indicators['ADX']
+    pos_DIs = stock.tech_indicators['+DI']
+    neg_DIs = stock.tech_indicators['-DI']
+    prices = stock.prices['high']
+
+    buysell_df = pd.DataFrame(columns=['buy', 'sell'], index=list(range(0, len(dates))))
+
+    buy_list = []
+    sell_list = []
+    buysell_dates =[]
+    ADX_sum = ADX_count = 0
+
+    bought = False
+    prev_bought_i = 0
+    # sell_signal = 0 # prevents buying after initial sell for 3 days
+    i = 0
+    for date, price, ADX, pos_DI, neg_DI in zip(dates, prices, ADXs, pos_DIs, neg_DIs):
+        # if date == datetime.date(2021, 5, 5):
+        #     breakpoint()
+
+        buy_price = np.nan
+        sell_price = np.nan
+        buysell_date = np.nan
+
+        # a strong trend is present when ADX is above 20, else we can't conclude anything from ADX indicator
+        if ADX > 20:
+            # buy signal
+            if pos_DI > neg_DI and not bought:
+                prev_bought_i = i
+                buysell_date = date
+                buy_price = price
+                bought = True
+            # sell signal
+            elif neg_DI > pos_DI and bought:
+                if i-1 >= 0 and neg_DIs[i-1] > pos_DIs[i-1]:
+                    ADX_avg = ADX_sum / ADX_count
+                    if ADX_avg > 20:
+                        # sell_signal = 0
+                        buysell_date = date
+                        sell_price = price
+                    else:
+                        # assert(not math.isnan(buy_list[prev_bought_i]))
+                        buy_list[prev_bought_i] = np.nan
+                        buysell_dates[prev_bought_i] = np.nan
+                    bought = False
+
+        if bought:
+            ADX_sum += ADX
+            ADX_count += 1
+        else:
+            ADX_sum = ADX_count = 0
+
+        buy_list.append(buy_price)
+        sell_list.append(sell_price)
+        buysell_dates.append(buysell_date)
+        i += 1
+
+    # success_rate = 0 if total_trades == 0 else (successful_trades / total_trades) * 100
+    # plt.plot(dates, differences)
+    # plt.show()
+
+    # breakpoint()
+    buysell_df['buy'] = buy_list
+    buysell_df['sell'] = sell_list
+    buysell_df['dates'] = buysell_dates
     return buysell_df
 
 
@@ -338,10 +480,10 @@ def evaluate_strategy(stock, indices):
 
     for i, row in indices.iterrows():
         # print(i)
-        if len(row) == 3:
-            data, buy_price, sell_price = row
+        if len(row) == 4:
+            data, buy_price, sell_price, date = row
         else:
-            buy_price, sell_price = row
+            buy_price, sell_price, date = row
 
         # buy signal
         if not math.isnan(buy_price):
@@ -395,7 +537,7 @@ def evaluate_strategy(stock, indices):
     avg_return_percent = ((annual_return ** (365. / num_days)) - 1) * 100
     CAGR = fin.calculate_AROR(principal, current_balance, num_days)
 
-    success_rate = round((successful_transactions / total_transactions) * 100, 2)
+    success_rate = round(fin.divide(successful_transactions, total_transactions) * 100, 2)
     print(f'success rate: {success_rate}')
 
     # print(f'prices: {prices[0], prices[-1]}')

@@ -1,4 +1,4 @@
-from technical_analysis import get_MACD, get_SMA, get_EMA, get_RSI
+from technical_analysis import *
 from collections import defaultdict
 import datetime
 import pdb
@@ -198,19 +198,29 @@ class Stock:
     def get_tech_indicators(self):
 
         x_days = max(self.moving_averages)
-        prev_prices = self.SQL.get_prev_x_rows(self.ticker, 'close', self.start_date, x_days)
-        curr_prices = self.prices['close']
-        prices = prev_prices + curr_prices
+        # see how long this takes to run
+        prev_close_prices = self.SQL.get_prev_x_rows(self.ticker, 'close', self.start_date, x_days)
+        prev_high_prices = self.SQL.get_prev_x_rows(self.ticker, 'high', self.start_date, x_days)
+        prev_low_prices = self.SQL.get_prev_x_rows(self.ticker, 'low', self.start_date, x_days)
 
-        if len(prices) != (len(curr_prices) + x_days):
+        curr_close_prices = self.prices['close']
+        curr_high_prices = self.prices['high']
+        curr_low_prices = self.prices['low']
+
+        close_prices = prev_close_prices + curr_close_prices
+        high_prices = prev_high_prices + curr_high_prices
+        low_prices = prev_low_prices + curr_low_prices
+
+        if len(close_prices) != (len(curr_close_prices) + x_days):
             return 0
 
-        start = len(prev_prices)
-        MACD, signal, histogram = get_MACD(prices[start - 33:])
-        EMAs = {n:get_EMA(prices[start - n:], n+1) for n in self.moving_averages}
-        SMAs = {n: get_SMA(prices[start - n:], n+1) for n in self.moving_averages}
-        RSI = get_RSI(prices[start - 15:])
+        start = len(prev_close_prices)
+        MACD, signal, histogram = get_MACD(close_prices[start - 33:])
+        EMAs = {n:get_EMA(close_prices[start - n:], n+1) for n in self.moving_averages}
+        SMAs = {n: get_SMA(close_prices[start - n:], n+1) for n in self.moving_averages}
+        RSI = get_RSI(close_prices[start - 15:])
 
+        neg_DI14s, pos_DI14s, ADXs = get_ADX(high_prices[start-27:], low_prices[start-27:], close_prices[start-27:])
         self.tech_indicators['MACD'] = MACD
         self.tech_indicators['signal'] = signal
         self.tech_indicators['histogram'] = histogram
@@ -219,8 +229,11 @@ class Stock:
         self.tech_indicators['EMA'] = EMAs
         self.tech_indicators['SMA'] = SMAs
 
-        self.fundamental_data = self.SQL.query_table(self.ticker, fundamental_db=True)
+        self.tech_indicators['-DI'] = neg_DI14s
+        self.tech_indicators['+DI'] = pos_DI14s
+        self.tech_indicators['ADX'] = ADXs
 
+        self.fundamental_data = self.SQL.query_table(self.ticker, fundamental_db=True)
         return 1
 
 

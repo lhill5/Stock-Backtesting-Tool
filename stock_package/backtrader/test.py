@@ -1,46 +1,25 @@
 import requests
+import config
 import json
-import time
 
+account_url = f'{config.ENDPOINT_URL}/v2/account'
+orders_url = f'{config.ENDPOINT_URL}/v2/orders'
+HEADERS = {'APCA-API-KEY-ID': config.APA_API_KEY, 'APCA-API-SECRET-KEY': config.APA_SECRET_KEY}
 
-api_key = 'SEp3jMzPKmbxBD_UuJw2uYxjfWgqkoaT'
+def get_account():
+    r = requests.get(account_url, headers=HEADERS)
+    return json.loads(r.content)
 
-def get_stock_list():
-    url = f'https://api.polygon.io/v3/reference/tickers?type=CS&active=true&sort=ticker&order=asc&limit=1000&apiKey={api_key}'
-    next_url = url
+def create_order(ticker, qty, side, type='market', time_in_force='gtc'):
+    data = {
+        'symbol': ticker,
+        'qty': qty,
+        'side': side,
+        'type': type,
+        'time_in_force': time_in_force
+    }
+    r = requests.get(orders_url, json=data, headers=HEADERS)
+    return json.loads(r.content)
 
-    stocks = []
-    start_time = time.time()
-    counter = 0
-
-    while next_url:
-        r = requests.get(next_url)
-        data = r.json()
-        pretty_data = json.dumps(data, indent=4)
-        print(pretty_data)
-        counter += 1
-
-        # prevent more than 5 API requests per minute
-        if counter % 5 == 0:
-            while time.time() - start_time < 60:
-                pass
-            start_time = time.time()
-
-        elif data['status'] == 'OK':
-            # add stocks to stocks list
-            stocks.extend(data['results'])
-
-            # if more data, get next url and continue adding stocks
-            next_url = None
-            if 'next_url' in data:
-                next_url = data['next_url']
-                next_url += f'&type=CS&active=true&sort=ticker&order=asc&limit=1000&apiKey={api_key}'
-
-        elif data['status'] == 'ERROR':
-            print('error processing API request (too many requests)')
-            time.sleep(5)
-
-
-if __name__ == '__main__':
-    pass
-
+response = create_order('TSLA', 100, 'buy', 'market', 'gtc')
+print(response)

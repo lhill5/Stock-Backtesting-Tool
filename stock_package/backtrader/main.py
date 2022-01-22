@@ -6,6 +6,7 @@ from Graph import Graph
 from SQL_DB import SQL_DB
 from StockData_API import StockData_API
 import trading_strategies as strat
+from broker_API import Broker_API
 
 import time
 import datetime
@@ -23,13 +24,14 @@ stock_count = 0
 
 stock_data_API = StockData_API()
 database = SQL_DB(stock_data_API, update=False)
+broker_API = Broker_API()
 
 start_time = time.time()
-start_date, end_date = datetime.date(2010, 1, 1), datetime.date(2021, 1, 1)
+start_date, end_date = datetime.date(2019, 1, 1), datetime.date(2021, 6, 1)
 # stock_list = ['aapl', 'tsla', 'msft', 'voo', 'vti', 'gme', 'vbr', 'ijr', 'vo', 'amc']
 stock_list = database.stocks
 # for i in range(100):
-for ticker in ['MSFT']:
+for ticker in ['AAPL']:
 # for ticker in database.stocks:
 #     ticker = random.choice(database.stocks)
     # ticker = 'aapl'

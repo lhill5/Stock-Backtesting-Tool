@@ -2,6 +2,7 @@ import datetime
 import numpy as np
 import pandas as pd
 from matplotlib.colors import rgb2hex
+import math
 
 
 def rgb_to_hex(rgb):
@@ -37,6 +38,10 @@ def convert_str_to_date(str):
 def print_df(df):
     with pd.option_context('display.max_rows', None, 'display.max_columns', None, 'display.precision', 3):
         print(df)
+
+
+def is_number(num):
+    return not math.isnan(num)
 
 
 if __name__ == '__main__':

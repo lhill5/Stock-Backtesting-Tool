@@ -1,4 +1,5 @@
 from financial_calcs import average
+import pandas as pd
 import math
 
 
@@ -125,6 +126,91 @@ def get_RSI(prices):
 	return RSI
 
 
+def get_ADX(high_prices, low_prices, close_prices):
+	pos_DMs = []
+	neg_DMs = []
+	TRs = []
+
+	i = 1
+	for cur_high, cur_low, cur_close in zip(high_prices[1:15], low_prices[1:15], close_prices[1:15]):
+		prev_high = high_prices[i-1]
+		prev_low = low_prices[i-1]
+		prev_close = close_prices[i-1]
+
+		pos_DM = cur_high - prev_high
+		neg_DM = prev_low - cur_low
+
+		# fix if negative/positive
+		pos_DM = max(pos_DM, 0) if pos_DM > neg_DM else 0
+		neg_DM = max(neg_DM, 0) if neg_DM > pos_DM else 0
+
+		TR1 = max(cur_high - cur_low, abs(cur_high - prev_close), abs(cur_low - prev_close))
+
+		TRs.append(TR1)
+		pos_DMs.append(pos_DM)
+		neg_DMs.append(neg_DM)
+		i += 1
+
+	first_TR14 = sum(TRs)
+	first_pos_DM14 = sum(pos_DMs)
+	first_neg_DM14 = sum(neg_DMs)
+
+	prior_TR14 = first_TR14
+	prior_pos_DM14 = first_pos_DM14
+	prior_neg_DM14 = first_neg_DM14
+
+	smoothed_TR14s = [first_TR14]
+	smoothed_pos_DM14s = [first_pos_DM14]
+	smoothed_neg_DM14s = [first_neg_DM14]
+
+	for cur_high, cur_low, cur_close in zip(high_prices[15:], low_prices[15:], close_prices[15:]):
+		prev_high = high_prices[i - 1]
+		prev_low = low_prices[i - 1]
+		prev_close = close_prices[i - 1]
+
+		current_pos_DM1 = cur_high - prev_high
+		current_neg_DM1 = prev_low - cur_low
+
+		current_pos_DM1 = max(current_pos_DM1, 0) if current_pos_DM1 > current_neg_DM1 else 0
+		current_neg_DM1 = max(current_neg_DM1, 0) if current_neg_DM1 > current_pos_DM1 else 0
+
+		pos_DMs.append(current_pos_DM1)
+		neg_DMs.append(current_neg_DM1)
+
+		current_TR1 = max(cur_high - cur_low, abs(cur_high - prev_close), abs(cur_low - prev_close))
+		TRs.append(current_TR1)
+		# DM = pos_DM if pos_DM > neg_DM else neg_DM
+
+		smoothed_TR14 = prior_TR14 - (prior_TR14/14) + current_TR1
+		smoothed_pos_DM14 = prior_pos_DM14 - (prior_pos_DM14/14) + current_pos_DM1
+		smoothed_neg_DM14 = prior_neg_DM14 - (prior_neg_DM14/14) + current_neg_DM1
+
+		smoothed_TR14s.append(smoothed_TR14)
+		smoothed_pos_DM14s.append(smoothed_pos_DM14)
+		smoothed_neg_DM14s.append(smoothed_neg_DM14)
+
+		prior_TR14 = smoothed_TR14
+		prior_pos_DM14 = smoothed_pos_DM14
+		prior_neg_DM14 = smoothed_neg_DM14
+
+		i += 1
+
+	pos_DI14s = [100 * (pos_DM14 / TR14) for pos_DM14, TR14 in zip(smoothed_pos_DM14s, smoothed_TR14s)]
+	neg_DI14s = [100 * (neg_DM14 / TR14) for neg_DM14, TR14 in zip(smoothed_neg_DM14s, smoothed_TR14s)]
+	DXs = [100 * (abs(pos_DI14 - neg_DI14) / (pos_DI14 + neg_DI14)) for pos_DI14, neg_DI14 in zip(pos_DI14s, neg_DI14s)]
+
+	first_ADX = average(DXs[:14])
+	prior_ADX = first_ADX
+
+	ADXs = [first_ADX]
+	for DX in DXs[14:]:
+		ADX = ((prior_ADX * 13) + DX) / 14
+		ADXs.append(ADX)
+		prior_ADX = ADX
+
+	return neg_DI14s[13:], pos_DI14s[13:], ADXs
+
+
 def backtest_EMA(dates, prices, tech_indicators):
 	EMA = tech_indicators['EMA']
 
@@ -197,3 +283,14 @@ def get_tech_indicator(indicator, dates, prices):
 	elif indicator == 'RSI':
 		return get_RSI(dates, prices)
 
+
+if __name__ == '__main__':
+
+	df = pd.read_excel('cs-adx.xls', header=1)
+	df = df.loc[:, ~df.columns.isin(['Unnamed: 0', 'Unnamed: 1'])]
+	high = df['High'].to_list()
+	low = df['Low'].to_list()
+	close = df['Close'].to_list()
+	ADX = df['ADX'].dropna().to_list()
+
+	get_ADX(high, low, close)
