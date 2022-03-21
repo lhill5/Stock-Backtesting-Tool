@@ -3,64 +3,12 @@
 {% block title %}Stock Backtester{% endblock %}
 
 {% block preamble %}
-    <script src="backtrader/static/js/custom.js?version=<%= Common.GetVersion%>" type="text/javascript"></script>
-    <link rel="stylesheet" type="text/css" href="backtrader/static/css/style.css?version=<%= Common.GetVersion%>" />
-
     <style>
         @import url(https://fonts.googleapis.com/css?family=Noto+Sans);
-        body {
-        font-family: 'Noto Sans', sans-serif;
-        -webkit-font-smoothing: antialiased;
-        text-rendering: optimizeLegibility;
-        color: #fff;
-        }
     </style>
 
-    <!-- disable scrolling -->
-    <style>
-        html, body {
-            width: 100%;
-            height: 100%;
-            overflow: hidden;
-        }
-
-        body > div {
-            height: 100%;
-            overflow: hidden;
-            -webkit-overflow-scrolling: touch;
-        }
-    </style>
-
-    <style>
-        input.choices__input.choices__input--cloned {
-            color: white;
-            padding-left: 5px;
-<!--            font-weight: bold;-->
-        }
-
-        .choices__inner {
-            height: 44px;
-        }
-
-        .choices__list--dropdown {
-            color: #558AC5;
-            font-weight: bold;
-        }
-    </style>
-
-    <style>
-        .bk-root .bk-data-table {
-            font-size: 14px;
-        }
-        .bk-root .slick-row.even {
-            background: #494949;
-            font-size: 13px;
-        }
-        .bk-root .slick-row.odd {
-            background: #5d5d5d;
-            font-size: 13px;
-        }
-    </style>
+    <script src="backtrader/static/js/custom.js?version=<%= Common.GetVersion%>" type="text/javascript"></script>
+    <link rel="stylesheet" type="text/css" href="backtrader/static/css/style.css"/>
 
 {% endblock %}
 

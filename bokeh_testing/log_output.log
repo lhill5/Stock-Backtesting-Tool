@@ -1,0 +1,10 @@
+2022-01-23 23:04:47,692
+root - DEBUG - function: test - Line: 4 - This is a debug message
+2022-01-23 23:04:47,692
+root - INFO - function: test - Line: 5 - This is an info message
+2022-01-23 23:04:47,692
+root - WARNING - function: test - Line: 6 - This is a warning message
+2022-01-23 23:04:47,692
+root - ERROR - function: test - Line: 7 - This is an error message
+2022-01-23 23:04:47,692
+root - CRITICAL - function: test - Line: 8 - This is a critical message

@@ -67,6 +67,7 @@ class Stock_Screener:
 
         print(f'count = {count}')
 
+
     def get_week_low(self, stock, end_date, weeks):
         # not possible that start_date is on a weekend since end_date is on a weekday
         start_date = end_date - timedelta(weeks=weeks)

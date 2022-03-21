@@ -1,7 +1,7 @@
 from stock_package.backtrader.SQL_DB import SQL_DB
 from stock_package.backtrader.Graph import Graph
 from stock_package.backtrader.Stock import Stock
-from stock_package.backtrader.StockData_API import StockData_API
+from stock_package.backtrader.Stock_Prices import StockData_API
 import stock_package.backtrader.financial_calcs
 
 import time

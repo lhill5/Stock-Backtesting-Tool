@@ -35,9 +35,9 @@ sp500_tickers = []
 for ticker in sp500_tickers_elem:
     if ticker.find_element_by_xpath('..').tag_name == "tbody":
         td = ticker.find_elements_by_tag_name('td')
-        symbol, name = td[0].text, td[1].text
-        sp500_tickers.append(symbol + ' - ' + name)
-
+        symbol, name, date_added, cik  = td[0].text, td[1].text, td[6].text, td[7].text
+        print(symbol)
+        sp500_tickers.append(symbol + ' - ' + name + ' - ' + date_added + ' - ' + cik)
 
 # ________________________________________________________
 # stock_count = len(stock_tickers)

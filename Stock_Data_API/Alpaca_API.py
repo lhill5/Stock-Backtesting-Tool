@@ -1,4 +1,5 @@
 import alpaca_trade_api as tradeapi
+
 from stock_package.backtrader import config
 import pandas as pd
 
@@ -9,7 +10,7 @@ end=pd.Timestamp('2020-08-30', tz=NY).isoformat()
 # print(api.get_barset(['AAPL', 'GOOG'], 'minute', start=start, end=end).df)
 
 
-api = tradeapi.REST(key_id=config.API_KEY, secret_key=config.SECRET_KEY, api_version='v2')
+api = tradeapi.REST(key_id='PKK1SDR4HL5GJ8SI6YRW', secret_key='J2fFjfz3nhebKGoUcNHJ0fq72ft7Po9squme7V3j', api_version='v2')
 
 
 def get_assets():
@@ -31,7 +32,6 @@ def get_daily_stock_data(stock):
     #     date = d.t.date()
     #     rows.append((date, d.o, d.h, d.l, d.c, d.v))
 
-
     # print(rows[0])
     # See how much stock moved in that timeframe.
 
@@ -42,10 +42,11 @@ def submit_market_order(stock, qty):
         symbol=stock,
         qty=qty,
         side='buy',
-        type='market'
+        # type='gtc'
         # time_in_force='gtc'
     )
 
 
-get_daily_stock_data('EMP')
+# get_daily_stock_data('EMP')
+submit_market_order('AAPL', 1)
 

@@ -1,5 +1,5 @@
 import requests
-from stock_package.backtrader.random_functions import convert_epoch_to_date, convert_str_to_date
+from stock_package.backtrader.global_functions import convert_epoch_to_date, convert_str_to_date
 import json
 
 
@@ -179,7 +179,7 @@ def test():
 
 
 if __name__ == '__main__':
-    ticker = 'AAPL'
+    ticker = 'JPM'
     # start_date = datetime.date(2019,8,16)
     # end_date = datetime.date(2021,8,14)
 
